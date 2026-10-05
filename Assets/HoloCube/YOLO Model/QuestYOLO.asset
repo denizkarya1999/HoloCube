@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdba79b425970779aa1fb736c6eddff0, type: 3}
+  m_Name: QuestYOLO
+  m_EditorClassIdentifier: 
+  Weights: {fileID: 5022602860645237092, guid: 7dbcf99aba214365b6bd47171e458e93, type: 3}
+  Labels: {fileID: 4900000, guid: 2675e9bcdaf84ace9740261cef8a7228, type: 3}
+  Backend: 256
+  LetterboxShader: {fileID: 4800000, guid: d7624e6280d3407096996184f3a985c8, type: 3}

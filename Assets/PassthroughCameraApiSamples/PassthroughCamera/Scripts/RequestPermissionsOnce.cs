@@ -10,6 +10,8 @@ namespace PassthroughCameraSamples
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AfterSceneLoad()
         {
+            // The standalone app owns its passthrough layer and permission flow.
+            if (SceneManager.GetActiveScene().name == "QuestYOLO") return;
             var ptLayerGo = new GameObject(nameof(OVRPassthroughLayer));
             Object.DontDestroyOnLoad(ptLayerGo);
             ptLayerGo.AddComponent<OVRPassthroughLayer>();

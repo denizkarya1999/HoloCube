@@ -1,0 +1,32 @@
+[
+  {
+    "name": "main-app",
+    "color": "0866FF",
+    "description": "Camera access, app lifecycle, controls, and headset overlays"
+  },
+  {
+    "name": "yolo-inference",
+    "color": "6E40C9",
+    "description": "Image preparation, inference, output decoding, and filtering"
+  },
+  {
+    "name": "yolo-model",
+    "color": "D876E3",
+    "description": "YOLO weights, class labels, export settings, and training"
+  },
+  {
+    "name": "quest",
+    "color": "0E8A16",
+    "description": "Quest hardware, Android builds, permissions, and installation"
+  },
+  {
+    "name": "research",
+    "color": "D4C5F9",
+    "description": "HoloCube paper, optical tags, and research extensions"
+  },
+  {
+    "name": "performance",
+    "color": "FBCA04",
+    "description": "Latency, frame rate, memory, and sustained headset behavior"
+  }
+]

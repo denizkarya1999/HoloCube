@@ -1,15 +1,17 @@
-# Agent Instructions — Unity Passthrough Camera API Samples
+# Agent Instructions — HoloCube
 
-A Unity sample project showing five scenes (`CameraViewer`, `CameraToWorld`, `BrightnessEstimation`, `MultiObjectDetection`, `ShaderSample`) that use MRUK's `PassthroughCameraAccess` component to read the Quest headset cameras.
+A standalone Quest 3 / 3S app with an on-device YOLO26 pipeline. Start in `Assets/HoloCube/`: `Main App`, `YOLO Inference`, and `YOLO Model` are the three runtime parts. Meta's original camera samples remain as supporting assets and references; `QuestYOLO.unity` is the app's only build scene.
 
 ## Source-of-truth files (read these first, do not duplicate their contents in this file)
 
 For setup, build steps, SDK versions, and project layout, read:
 
-- `README.md` — official setup, sample descriptions, troubleshooting, bug-report template
+- `README.md` — app overview, research inspiration, file structure, labels, build steps
 - `ProjectSettings/ProjectVersion.txt` — Unity editor version
 - `Packages/manifest.json` — Unity package versions (MRUK, Unity Inference Engine)
-- `Assets/PassthroughCameraApiSamples/` — all sample scenes, scripts, and the `StartScene` menu
+- `Assets/HoloCube/` — app scene, runtime code, model, and editor validation tools
+- `Docs/DEVELOPMENT.md` and `VALIDATION.md` — model format, limitations, and checks actually performed
+- `UPSTREAM_README.md` — original Meta sample documentation
 - `LICENSE.txt` and `Assets/PassthroughCameraApiSamples/LICENSE.txt` — license terms
 
 ## Quest / Horizon-specific notes
@@ -17,8 +19,8 @@ For setup, build steps, SDK versions, and project layout, read:
 - Requires **Quest 3 / 3S** — older Quest hardware does not expose passthrough camera frames.
 - App needs the `horizonos.permission.HEADSET_CAMERA` permission and passthrough enabled in the project; do not strip these from the manifest.
 - **XR Simulator does not support the Passthrough Camera API.** Test on a physical device or via Meta Horizon Link 2.1+; agents that try to verify in-editor will silently get nothing.
-- `MultiObjectDetection` pulls in Unity Inference Engine (Sentis) and a YOLO model under MIT — keep that license marker if extracting scripts.
-- Git LFS is used by this repo — run `git lfs install` before cloning.
+- The active YOLO26 model carries the included Ultralytics AGPL-3.0 license. The legacy upstream YOLO model has a separate MIT notice; keep both licenses with their respective files.
+- Model and SDK assets are stored directly in Git; this repository does not currently use Git LFS.
 
 # Meta Quest tooling
 
