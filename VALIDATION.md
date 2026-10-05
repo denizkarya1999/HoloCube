@@ -91,7 +91,8 @@ after `bash Tools/run-unity.sh ValidateGPU` to repeat the GPU-to-PyTorch compari
   in the headset's Movies/HoloCube folder.
 - Device model parity also passed, and live camera inference returned 300
   detection rows. Log: `Builds/Quest-final.log`.
-- Visual confirmation of the recording badge, saved-file notice, and
-  three-second inference-off notice remains pending user feedback.
+- The user confirmed the red recording badge and saved-file message now work
+  in the headset. The inference-off timer is set to three seconds; a separate
+  visual timing check was not reported.
 - Final APK SHA-256:
   `4b12f0f8f26d9af11d023418022abb5e3d59acb2d0e45031b2102b486b910505`.
