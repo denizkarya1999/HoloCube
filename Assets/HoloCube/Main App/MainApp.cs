@@ -130,7 +130,10 @@ namespace HoloCube.QuestYOLO
         private void ReadButtons()
         {
             if (OVRInput.GetDown(OVRInput.Button.Start, OVRInput.Controller.LTouch))
+            {
                 showControllerHelp = !showControllerHelp;
+                menuPage = MenuPage.Home;
+            }
 
             if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
                 userPaused = !userPaused;
@@ -138,10 +141,16 @@ namespace HoloCube.QuestYOLO
             bButtonHeld = OVRInput.Get(OVRInput.Button.Two, OVRInput.Controller.RTouch);
 
             if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.LTouch))
+            {
+                showControllerHelp = false;
                 menuPage = menuPage == MenuPage.About ? MenuPage.Home : MenuPage.About;
+            }
 
             if (OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.LTouch))
+            {
+                showControllerHelp = false;
                 menuPage = menuPage == MenuPage.Settings ? MenuPage.Home : MenuPage.Settings;
+            }
 
             UpdateSettingsWithJoystick();
         }
@@ -284,13 +293,9 @@ namespace HoloCube.QuestYOLO
                 statusPanel.SetActive(showStatusPanel);
             if (!showStatusPanel) return;
 
-            string pageMessage = GetMenuPageMessage();
-            string videoStatus = videoCapture != null ? videoCapture.StatusHint : string.Empty;
-            string controls = showControllerHelp
-                ? "\n" + ControllerMenu + "\nPress = to hide controls"
-                : string.Empty;
-            StatusLabel.text = pageMessage + controls +
-                (string.IsNullOrEmpty(videoStatus) ? string.Empty : "\n" + videoStatus);
+            StatusLabel.text = showControllerHelp && !failed
+                ? ControllerMenu + "\nPress = to hide controls"
+                : GetMenuPageMessage();
         }
 
         private string GetMenuPageMessage()
