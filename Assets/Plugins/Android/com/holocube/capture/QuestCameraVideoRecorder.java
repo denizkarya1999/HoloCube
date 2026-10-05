@@ -103,6 +103,7 @@ public final class QuestCameraVideoRecorder {
             status = "RECORDING";
             encoderThread = new Thread(this::encodeFrames, "HoloCubeVideoEncoder");
             encoderThread.start();
+            Log.i(TAG, "HOLOCUBE_VIDEO_STARTED: Movies/HoloCube/" + displayName);
             return displayName;
         } catch (Exception error) {
             Log.e(TAG, "Could not start video recording", error);
@@ -128,6 +129,7 @@ public final class QuestCameraVideoRecorder {
         if (!"RECORDING".equals(status)) return;
         status = "SAVING";
         stopRequested = true;
+        Log.i(TAG, "HOLOCUBE_VIDEO_SAVING: " + displayName);
     }
 
     public void stopRecordingAndWait(int timeoutMillis) {
@@ -185,6 +187,8 @@ public final class QuestCameraVideoRecorder {
             if (updated < 1) throw new IOException("Could not publish the saved video.");
             published = true;
             status = "SAVED:" + displayName;
+            Log.i(TAG, "HOLOCUBE_VIDEO_SAVED: Movies/HoloCube/" + displayName
+                + " (" + encodedSamples + " frames)");
             mediaUri = null;
         } catch (Throwable error) {
             Log.e(TAG, "Could not finish video recording", error);
@@ -200,6 +204,9 @@ public final class QuestCameraVideoRecorder {
         if (frame.rgba.length < width * height * 4)
             throw new IOException("The camera frame has an unexpected size.");
 
+        // Release pending output before requesting input: a full output queue can
+        // prevent the codec from returning another input buffer.
+        drainOutput(false);
         int inputIndex = encoder.dequeueInputBuffer(10000);
         if (inputIndex < 0) return; // Keep the app responsive by dropping frames if the encoder is busy.
 
@@ -277,8 +284,10 @@ public final class QuestCameraVideoRecorder {
     private void sendEndOfStream() throws Exception {
         long deadline = System.nanoTime() + END_OF_STREAM_TIMEOUT_NS;
         int inputIndex = -1;
-        while (inputIndex < 0 && System.nanoTime() < deadline)
+        while (inputIndex < 0 && System.nanoTime() < deadline) {
+            drainOutput(false);
             inputIndex = encoder.dequeueInputBuffer(10000);
+        }
         if (inputIndex < 0) throw new IOException("The video encoder did not finish its input.");
 
         long endTime = Math.max(lastPresentationTimeUs + 1L, (System.nanoTime() - startTimeNs) / 1000L);

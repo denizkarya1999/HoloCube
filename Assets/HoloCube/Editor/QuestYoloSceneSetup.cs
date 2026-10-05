@@ -31,6 +31,7 @@ namespace HoloCube.Editor
             var rig = Object.FindFirstObjectByType<OVRCameraRig>();
             app.StatusLabel = CreateStatus(rig.centerEyeAnchor);
             app.RecordingIndicator = CreateRecordingIndicator(rig.centerEyeAnchor);
+            app.RecordingFeedbackLabel = CreateRecordingFeedback(rig.centerEyeAnchor);
             new GameObject("Passthrough").AddComponent<OVRPassthroughLayer>();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -124,34 +125,33 @@ namespace HoloCube.Editor
         {
             var canvasObject = new GameObject("Recording Indicator", typeof(RectTransform), typeof(Canvas));
             canvasObject.transform.SetParent(head, false);
-            canvasObject.transform.localPosition = new Vector3(0f, 0.46f, 1.25f);
+            canvasObject.transform.localPosition = new Vector3(0f, 0.28f, 1.25f);
             canvasObject.transform.localScale = Vector3.one * 0.001f;
 
             var canvas = canvasObject.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
             canvas.overrideSorting = true;
             canvas.sortingOrder = 100;
-            canvasObject.GetComponent<RectTransform>().sizeDelta = new Vector2(420, 100);
+            canvasObject.GetComponent<RectTransform>().sizeDelta = new Vector2(420, 120);
+            var background = canvasObject.AddComponent<Image>();
+            background.color = new Color(0.015f, 0.03f, 0.055f, 0.85f);
+            background.raycastTarget = false;
 
-            var dotObject = new GameObject("Red Circle", typeof(RectTransform), typeof(Text));
+            var dotObject = new GameObject("Red Circle", typeof(RectTransform), typeof(RecordingDot));
             dotObject.transform.SetParent(canvasObject.transform, false);
-            var dot = dotObject.GetComponent<Text>();
+            var dot = dotObject.GetComponent<RecordingDot>();
             dot.rectTransform.anchorMin = dot.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            dot.rectTransform.sizeDelta = new Vector2(70, 90);
-            dot.rectTransform.anchoredPosition = new Vector2(-105, 0);
-            dot.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            dot.fontSize = 42;
-            dot.alignment = TextAnchor.MiddleCenter;
+            dot.rectTransform.sizeDelta = new Vector2(26, 26);
+            dot.rectTransform.anchoredPosition = new Vector2(-115, 20);
             dot.color = new Color(1f, 0.12f, 0.12f, 1f);
             dot.raycastTarget = false;
-            dot.text = "●";
 
             var labelObject = new GameObject("Recording Label", typeof(RectTransform), typeof(Text));
             labelObject.transform.SetParent(canvasObject.transform, false);
             var label = labelObject.GetComponent<Text>();
             label.rectTransform.anchorMin = label.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            label.rectTransform.sizeDelta = new Vector2(250, 90);
-            label.rectTransform.anchoredPosition = new Vector2(70, 0);
+            label.rectTransform.sizeDelta = new Vector2(250, 55);
+            label.rectTransform.anchoredPosition = new Vector2(45, 20);
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             label.fontSize = 32;
             label.alignment = TextAnchor.MiddleLeft;
@@ -159,8 +159,50 @@ namespace HoloCube.Editor
             label.raycastTarget = false;
             label.text = "Recording";
 
+            var destinationObject = new GameObject("Video Folder", typeof(RectTransform), typeof(Text));
+            destinationObject.transform.SetParent(canvasObject.transform, false);
+            var destination = destinationObject.GetComponent<Text>();
+            destination.rectTransform.sizeDelta = new Vector2(390, 40);
+            destination.rectTransform.anchoredPosition = new Vector2(0, -27);
+            destination.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            destination.fontSize = 22;
+            destination.alignment = TextAnchor.MiddleCenter;
+            destination.color = Color.white;
+            destination.raycastTarget = false;
+            destination.text = "Movies/HoloCube";
+
             canvasObject.SetActive(false);
             return canvasObject;
+        }
+
+        private static Text CreateRecordingFeedback(Transform head)
+        {
+            var canvasObject = new GameObject("Recording Feedback", typeof(RectTransform), typeof(Canvas));
+            canvasObject.transform.SetParent(head, false);
+            canvasObject.transform.localPosition = new Vector3(0f, 0.28f, 1.25f);
+            canvasObject.transform.localScale = Vector3.one * 0.001f;
+            var canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 100;
+            canvasObject.GetComponent<RectTransform>().sizeDelta = new Vector2(1000, 120);
+            var background = canvasObject.AddComponent<Image>();
+            background.color = new Color(0.015f, 0.03f, 0.055f, 0.85f);
+            background.raycastTarget = false;
+            var labelObject = new GameObject("Save Status", typeof(RectTransform), typeof(Text));
+            labelObject.transform.SetParent(canvasObject.transform, false);
+            var label = labelObject.GetComponent<Text>();
+            label.rectTransform.anchorMin = Vector2.zero;
+            label.rectTransform.anchorMax = Vector2.one;
+            label.rectTransform.offsetMin = new Vector2(20, 10);
+            label.rectTransform.offsetMax = new Vector2(-20, -10);
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.fontSize = 24;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = Color.white;
+            label.raycastTarget = false;
+            canvasObject.SetActive(false);
+            return label;
         }
 
         private static Text CreateStatus(Transform head)

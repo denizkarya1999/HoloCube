@@ -29,6 +29,7 @@ namespace HoloCube.QuestYOLO
         private DateTime lastTimestamp;
         private float nextFrameTime;
         private string statusHint = DefaultHint;
+        private bool captureInterrupted;
 
         public bool IsRecording => isRecording;
         public bool CanRetryStart { get; private set; }
@@ -45,6 +46,12 @@ namespace HoloCube.QuestYOLO
 
             try
             {
+                // A previous GPU request must finish before its render texture can be reused.
+                if (readbackPending)
+                {
+                    CanRetryStart = true;
+                    return false;
+                }
 #if UNITY_ANDROID && !UNITY_EDITOR
                 if (nativeRecorder != null)
                 {
@@ -58,6 +65,12 @@ namespace HoloCube.QuestYOLO
                     DisposeNativeRecorder();
                 }
 #endif
+                lock (completedFrameLock)
+                {
+                    completedFrame = null;
+                    readbackError = null;
+                }
+                captureInterrupted = false;
                 ConfigureReadback(source.width, source.height);
 #if UNITY_ANDROID && !UNITY_EDITOR
                 nativeRecorder = new AndroidJavaObject("com.holocube.capture.QuestCameraVideoRecorder");
@@ -134,8 +147,12 @@ namespace HoloCube.QuestYOLO
 
             if (!string.IsNullOrEmpty(error))
             {
-                statusHint = "Video recording stopped: camera readback failed";
-                Stop();
+                if (isRecording)
+                {
+                    captureInterrupted = true;
+                    Debug.LogWarning("HoloCube video readback failed: " + error);
+                    Stop();
+                }
             }
             else if (frame != null && isRecording && nativeRecorder != null)
             {
@@ -145,7 +162,7 @@ namespace HoloCube.QuestYOLO
                 }
                 catch (Exception enqueueError)
                 {
-                    statusHint = "Video recording stopped";
+                    captureInterrupted = true;
                     Debug.LogWarning("HoloCube video frame could not be queued: " + enqueueError.Message);
                     Stop();
                 }
@@ -174,8 +191,25 @@ namespace HoloCube.QuestYOLO
 #if UNITY_ANDROID && !UNITY_EDITOR
             try
             {
+                // ReadButtons can stop a recording before Poll forwards its final completed frame.
+                byte[] finalFrame;
+                lock (completedFrameLock)
+                {
+                    finalFrame = completedFrame;
+                    completedFrame = null;
+                }
+                if (finalFrame != null)
+                    nativeRecorder?.Call("enqueueFrame", finalFrame);
+            }
+            catch (Exception error)
+            {
+                captureInterrupted = true;
+                Debug.LogWarning("HoloCube final video frame could not be queued: " + error.Message);
+            }
+            try
+            {
                 nativeRecorder?.Call("stopRecording");
-                statusHint = "Saving video…";
+                statusHint = captureInterrupted ? "Recording interrupted · saving video…" : "Saving video…";
             }
             catch (Exception error)
             {
@@ -221,6 +255,7 @@ namespace HoloCube.QuestYOLO
                 ReleaseReadbackResources();
                 return;
             }
+            if (!isRecording) return;
 
             if (request.hasError)
             {
@@ -302,15 +337,20 @@ namespace HoloCube.QuestYOLO
             }
             else if (nativeStatus == "SAVING")
             {
-                statusHint = "Saving video…";
+                statusHint = captureInterrupted ? "Recording interrupted · saving video…" : "Saving video…";
+                isRecording = false;
             }
             else if (nativeStatus.StartsWith("SAVED:", StringComparison.Ordinal))
             {
-                statusHint = "Saved to Movies/HoloCube/" + nativeStatus.Substring("SAVED:".Length);
+                statusHint = (captureInterrupted ? "Recording interrupted\n" : "") +
+                    "Saved to Movies/HoloCube/" + nativeStatus.Substring("SAVED:".Length);
+                isRecording = false;
             }
             else if (nativeStatus.StartsWith("ERROR:", StringComparison.Ordinal))
             {
-                statusHint = "Video recording failed";
+                statusHint = nativeStatus == "ERROR:No camera frames were captured."
+                    ? "No video saved · hold B a little longer"
+                    : "Video recording failed · no video saved";
                 isRecording = false;
             }
             else if (!isRecording && nativeStatus == "IDLE")

@@ -15,6 +15,7 @@ namespace HoloCube.Editor
     {
         public static void Run()
         {
+            CheckRecordingSource();
             CheckSavedScene();
             CheckCoordinatesAndDecoder();
             CheckRealModel();
@@ -28,6 +29,7 @@ namespace HoloCube.Editor
             var app = Object.FindFirstObjectByType<MainApp>();
             Require(app != null && app.CameraAccess != null && app.Model != null &&
                 app.Overlay != null && app.StatusLabel != null, "Scene wiring");
+            CheckRecordingScene(app);
             var label = app.Overlay.BoxTemplate.GetComponentInChildren<Text>(true);
             Require(label.fontSize == 48 && label.color == Color.white, "Readable labels");
             Require(Object.FindFirstObjectByType<SentisInferenceRunManager>() == null, "Single inference pipeline");
@@ -35,6 +37,31 @@ namespace HoloCube.Editor
             Require(app.Model.LetterboxShader != null, "Bundled letterbox shader");
             Require(File.Exists(QuestYoloSceneSetup.ModelFolder + YOLOModel.CheckpointFile), "Original .pt checkpoint");
             Require(AssetDatabase.GetAssetPath(app.Model.Labels) == QuestYoloSceneSetup.ModelFolder + "coco.names.txt", "YOLO26 class names");
+        }
+
+        internal static void CheckRecordingSource()
+        {
+            Require(File.Exists("Assets/Plugins/Android/com/holocube/capture/QuestCameraVideoRecorder.java"),
+                "Native video recorder source is missing; sync Assets/Plugins/Android before building");
+        }
+
+        internal static void CheckRecordingScene(MainApp app)
+        {
+            Require(app.StatusLabel != null && app.RecordingIndicator != null && app.RecordingFeedbackLabel != null,
+                "Recording indicator and save/error feedback wiring; regenerate the standalone Quest scene");
+            var indicatorCanvas = app.RecordingIndicator.GetComponent<Canvas>();
+            var recordingDot = app.RecordingIndicator.GetComponentInChildren<RecordingDot>(true);
+            Require(recordingDot != null && recordingDot.GetComponent<CanvasRenderer>() != null,
+                "Recording circle renderer");
+            var feedbackCanvas = app.RecordingFeedbackLabel.GetComponentInParent<Canvas>(true);
+            var statusCanvas = app.StatusLabel.GetComponentInParent<Canvas>(true);
+            Require(indicatorCanvas != null && indicatorCanvas.enabled &&
+                feedbackCanvas != null && feedbackCanvas.enabled, "Recording UI canvases");
+            Require(statusCanvas != null &&
+                !indicatorCanvas.transform.IsChildOf(statusCanvas.transform) &&
+                !feedbackCanvas.transform.IsChildOf(statusCanvas.transform) &&
+                !feedbackCanvas.transform.IsChildOf(indicatorCanvas.transform),
+                "Recording and save/error feedback must remain visible independently of menus and recording state");
         }
 
         private static void CheckCoordinatesAndDecoder()

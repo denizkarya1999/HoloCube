@@ -72,3 +72,20 @@ Builds and logs are excluded from Git. Reproduce them using the Unity menu or
 
 Run `.build-tools/pt/bin/python Tools/validate-pt.py --rgba Builds/pt-preprocessed.rgba`
 after `bash Tools/run-unity.sh ValidateGPU` to repeat the GPU-to-PyTorch comparison.
+
+## Recording feedback update — October 5, 2026
+
+- Rebuilt from the complete repository. The previously deployed APK lacked the
+  native `QuestCameraVideoRecorder` class, even though its source was in Git.
+- Android build guards now require the recorder source, independent recording
+  and save-feedback canvases, the red circle renderer, and the recorder class
+  in the completed APK/AAB's DEX files.
+- The final build passed the existing scene/model validation and Android build
+  guards. Log: `Builds/Build-final.log`.
+- Installed on the connected Quest 3S with app data preserved. Cold launch
+  completed, the app was foreground, and the launch verifier found no crash.
+- The headset was not being worn during deployment. Holding/releasing B and
+  visually checking the recording badge, saved-file notice, and three-second
+  inference-off notice still require a headset interaction check.
+- Final APK SHA-256:
+  `4b12f0f8f26d9af11d023418022abb5e3d59acb2d0e45031b2102b486b910505`.

@@ -27,6 +27,7 @@ namespace HoloCube.QuestYOLO
         public DetectionOverlay Overlay;
         public Text StatusLabel;
         public GameObject RecordingIndicator;
+        public Text RecordingFeedbackLabel;
 
         [Header("Which detections to show")]
         [Tooltip("Minimum confidence: 0.35 means 35%.")]
@@ -56,10 +57,16 @@ namespace HoloCube.QuestYOLO
         private float nextSettingsJoystickActionTime;
         private float nextRecordingStartAttemptTime;
         private string statusMessage = string.Empty;
+        private string lastRecordingHint = string.Empty;
+        private string recordingUnavailableReason;
+        private float recordingFeedbackUntil;
+        private float inferenceOffNoticeUntil;
 
         private const float SettingsStickDeadzone = 0.6f;
         private const float SettingsJoystickRepeatInterval = 0.22f;
         private const float RecordingStartRetryInterval = 0.5f;
+        private const float RecordingFeedbackDuration = 6f;
+        private const float InferenceOffNoticeDuration = 3f;
 
         private IEnumerator Start()
         {
@@ -84,20 +91,20 @@ namespace HoloCube.QuestYOLO
 
         private void Update()
         {
-            if (failed) return;
-
             try
             {
-                ReadButtons();
+                if (!failed) ReadButtons();
                 videoCapture?.Poll();
                 RefreshRecordingIndicator();
                 RefreshStatus();
+                if (failed) return;
 
                 if (!CameraIsReady()) return;
 
                 var cameraImage = CameraAccess.GetTexture();
                 if (cameraImage == null)
                 {
+                    recordingUnavailableReason = "Waiting for the Quest camera…";
                     StopRecording();
                     CancelDetection();
                     Overlay.Clear();
@@ -140,9 +147,19 @@ namespace HoloCube.QuestYOLO
             }
 
             if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
+            {
                 userPaused = !userPaused;
+                inferenceOffNoticeUntil = userPaused
+                    ? Time.unscaledTime + InferenceOffNoticeDuration
+                    : 0f;
+            }
 
             bButtonHeld = OVRInput.Get(OVRInput.Button.Two, OVRInput.Controller.RTouch);
+            if (!bButtonHeld)
+            {
+                recordingAttemptedForCurrentHold = false;
+                nextRecordingStartAttemptTime = 0f;
+            }
 
             if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.LTouch))
             {
@@ -203,6 +220,7 @@ namespace HoloCube.QuestYOLO
             else if (!CameraAccess.IsPlaying)
                 waitMessage = "Waiting for the Quest camera…";
 
+            recordingUnavailableReason = waitMessage;
             if (waitMessage == null) return true;
 
             StopRecording();
@@ -231,6 +249,7 @@ namespace HoloCube.QuestYOLO
             if (!recordingAttemptedForCurrentHold &&
                 Time.unscaledTime >= nextRecordingStartAttemptTime)
             {
+                lastRecordingHint = string.Empty;
                 bool started = videoCapture.TryStart(cameraImage);
                 recordingAttemptedForCurrentHold = started || !videoCapture.CanRetryStart;
                 nextRecordingStartAttemptTime =
@@ -303,7 +322,8 @@ namespace HoloCube.QuestYOLO
                 ? StatusLabel.transform.parent.gameObject
                 : StatusLabel.gameObject;
             bool showInferenceOffStatus =
-                menuPage == MenuPage.Home && userPaused && !showControllerHelp && !failed;
+                menuPage == MenuPage.Home && userPaused && !showControllerHelp && !failed &&
+                Time.unscaledTime < inferenceOffNoticeUntil;
             bool showStatusPanel = menuPage != MenuPage.Home ||
                 showControllerHelp || showInferenceOffStatus || failed;
             if (statusPanel.activeSelf != showStatusPanel)
@@ -311,7 +331,7 @@ namespace HoloCube.QuestYOLO
             if (!showStatusPanel) return;
 
             if (showControllerHelp && !failed)
-                StatusLabel.text = ControllerMenu + "\nPress = to hide controls";
+                StatusLabel.text = ControllerMenu + "\nPress the Menu button to hide controls";
             else if (showInferenceOffStatus)
                 StatusLabel.text = "Inference Mode: Off";
             else
@@ -348,10 +368,30 @@ namespace HoloCube.QuestYOLO
 
         private void RefreshRecordingIndicator()
         {
-            if (RecordingIndicator == null) return;
             bool recording = videoCapture != null && videoCapture.IsRecording;
-            if (RecordingIndicator.activeSelf != recording)
+            if (RecordingIndicator != null && RecordingIndicator.activeSelf != recording)
                 RecordingIndicator.SetActive(recording);
+
+            if (RecordingFeedbackLabel == null) return;
+            string hint = videoCapture?.StatusHint ?? string.Empty;
+            if (hint != lastRecordingHint)
+            {
+                lastRecordingHint = hint;
+                recordingFeedbackUntil = Time.unscaledTime + RecordingFeedbackDuration;
+            }
+
+            // Keep saving progress visible until the recorder reports success or failure.
+            bool saving = hint.IndexOf("saving", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool showUnavailable = bButtonHeld && !recording && !saving &&
+                !string.IsNullOrEmpty(recordingUnavailableReason);
+            bool showFeedback = !recording && !string.IsNullOrEmpty(hint) &&
+                (saving || Time.unscaledTime < recordingFeedbackUntil);
+            showFeedback |= showUnavailable;
+            GameObject panel = RecordingFeedbackLabel.transform.parent.gameObject;
+            if (panel.activeSelf != showFeedback) panel.SetActive(showFeedback);
+            if (showFeedback) RecordingFeedbackLabel.text = showUnavailable
+                ? "Cannot record\n" + recordingUnavailableReason
+                : hint;
         }
 
         private void ShowError(Exception error)
