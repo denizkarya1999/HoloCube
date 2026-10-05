@@ -30,6 +30,7 @@ namespace HoloCube.Editor
             app.Overlay = overlay;
             var rig = Object.FindFirstObjectByType<OVRCameraRig>();
             app.StatusLabel = CreateStatus(rig.centerEyeAnchor);
+            app.RecordingIndicator = CreateRecordingIndicator(rig.centerEyeAnchor);
             new GameObject("Passthrough").AddComponent<OVRPassthroughLayer>();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -117,6 +118,49 @@ namespace HoloCube.Editor
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.Vulkan });
             PlayerSettings.Android.useCustomKeystore = false;
+        }
+
+        private static GameObject CreateRecordingIndicator(Transform head)
+        {
+            var canvasObject = new GameObject("Recording Indicator", typeof(RectTransform), typeof(Canvas));
+            canvasObject.transform.SetParent(head, false);
+            canvasObject.transform.localPosition = new Vector3(0f, 0.46f, 1.25f);
+            canvasObject.transform.localScale = Vector3.one * 0.001f;
+
+            var canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 100;
+            canvasObject.GetComponent<RectTransform>().sizeDelta = new Vector2(420, 100);
+
+            var dotObject = new GameObject("Red Circle", typeof(RectTransform), typeof(Text));
+            dotObject.transform.SetParent(canvasObject.transform, false);
+            var dot = dotObject.GetComponent<Text>();
+            dot.rectTransform.anchorMin = dot.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            dot.rectTransform.sizeDelta = new Vector2(70, 90);
+            dot.rectTransform.anchoredPosition = new Vector2(-105, 0);
+            dot.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            dot.fontSize = 42;
+            dot.alignment = TextAnchor.MiddleCenter;
+            dot.color = new Color(1f, 0.12f, 0.12f, 1f);
+            dot.raycastTarget = false;
+            dot.text = "●";
+
+            var labelObject = new GameObject("Recording Label", typeof(RectTransform), typeof(Text));
+            labelObject.transform.SetParent(canvasObject.transform, false);
+            var label = labelObject.GetComponent<Text>();
+            label.rectTransform.anchorMin = label.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            label.rectTransform.sizeDelta = new Vector2(250, 90);
+            label.rectTransform.anchoredPosition = new Vector2(70, 0);
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.fontSize = 32;
+            label.alignment = TextAnchor.MiddleLeft;
+            label.color = Color.white;
+            label.raycastTarget = false;
+            label.text = "Recording";
+
+            canvasObject.SetActive(false);
+            return canvasObject;
         }
 
         private static Text CreateStatus(Transform head)

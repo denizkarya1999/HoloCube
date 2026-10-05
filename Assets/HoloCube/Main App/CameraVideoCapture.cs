@@ -31,10 +31,12 @@ namespace HoloCube.QuestYOLO
         private string statusHint = DefaultHint;
 
         public bool IsRecording => isRecording;
+        public bool CanRetryStart { get; private set; }
         public string StatusHint => statusHint;
 
         public bool TryStart(Texture source)
         {
+            CanRetryStart = false;
             if (disposed || source == null)
             {
                 statusHint = "Video recording is unavailable";
@@ -49,6 +51,7 @@ namespace HoloCube.QuestYOLO
                     string previousStatus = nativeRecorder.Call<string>("getStatus");
                     if (previousStatus == "RECORDING" || previousStatus == "SAVING")
                     {
+                        CanRetryStart = true;
                         statusHint = "Saving the previous video…";
                         return false;
                     }

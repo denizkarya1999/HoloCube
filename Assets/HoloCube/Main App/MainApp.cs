@@ -26,6 +26,7 @@ namespace HoloCube.QuestYOLO
         public YOLOModel Model;
         public DetectionOverlay Overlay;
         public Text StatusLabel;
+        public GameObject RecordingIndicator;
 
         [Header("Which detections to show")]
         [Tooltip("Minimum confidence: 0.35 means 35%.")]
@@ -53,10 +54,12 @@ namespace HoloCube.QuestYOLO
         private MenuPage menuPage;
         private int selectedSettingIndex;
         private float nextSettingsJoystickActionTime;
+        private float nextRecordingStartAttemptTime;
         private string statusMessage = string.Empty;
 
         private const float SettingsStickDeadzone = 0.6f;
         private const float SettingsJoystickRepeatInterval = 0.22f;
+        private const float RecordingStartRetryInterval = 0.5f;
 
         private IEnumerator Start()
         {
@@ -87,6 +90,7 @@ namespace HoloCube.QuestYOLO
             {
                 ReadButtons();
                 videoCapture?.Poll();
+                RefreshRecordingIndicator();
                 RefreshStatus();
 
                 if (!CameraIsReady()) return;
@@ -213,20 +217,30 @@ namespace HoloCube.QuestYOLO
             if (!bButtonHeld)
             {
                 recordingAttemptedForCurrentHold = false;
+                nextRecordingStartAttemptTime = 0f;
                 StopRecording();
                 return;
             }
 
-            if (videoCapture == null) return;
-
-            if (!recordingAttemptedForCurrentHold)
+            if (videoCapture == null)
             {
-                recordingAttemptedForCurrentHold = true;
-                videoCapture.TryStart(cameraImage);
+                RefreshRecordingIndicator();
+                return;
+            }
+
+            if (!recordingAttemptedForCurrentHold &&
+                Time.unscaledTime >= nextRecordingStartAttemptTime)
+            {
+                bool started = videoCapture.TryStart(cameraImage);
+                recordingAttemptedForCurrentHold = started || !videoCapture.CanRetryStart;
+                nextRecordingStartAttemptTime =
+                    Time.unscaledTime + RecordingStartRetryInterval;
             }
 
             if (videoCapture.IsRecording)
                 videoCapture.CaptureFrame(cameraImage, CameraAccess.Timestamp);
+
+            RefreshRecordingIndicator();
         }
 
         private void CaptureImage(Texture image)
@@ -322,6 +336,15 @@ namespace HoloCube.QuestYOLO
         private void StopRecording()
         {
             videoCapture?.Stop();
+            RefreshRecordingIndicator();
+        }
+
+        private void RefreshRecordingIndicator()
+        {
+            if (RecordingIndicator == null) return;
+            bool recording = videoCapture != null && videoCapture.IsRecording;
+            if (RecordingIndicator.activeSelf != recording)
+                RecordingIndicator.SetActive(recording);
         }
 
         private void ShowError(Exception error)
