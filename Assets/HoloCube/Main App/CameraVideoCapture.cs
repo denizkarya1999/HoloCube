@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 namespace HoloCube.QuestYOLO
 {
-    /// <summary>Records the Quest camera texture to a local MP4 while the user holds B.</summary>
+    /// <summary>Records the Quest camera and microphone to a local MP4 while the user holds B.</summary>
     internal sealed class CameraVideoCapture : IDisposable
     {
         private const int MaximumDimension = 640;
@@ -16,6 +16,9 @@ namespace HoloCube.QuestYOLO
 
 #if UNITY_ANDROID && !UNITY_EDITOR
         private AndroidJavaObject nativeRecorder;
+        private bool microphonePermissionRequested;
+        private bool microphonePermissionPending;
+        private UnityEngine.Android.PermissionCallbacks microphonePermissionCallbacks;
 #endif
         private RenderTexture captureTarget;
         private Texture2D cpuReadbackTexture;
@@ -64,6 +67,7 @@ namespace HoloCube.QuestYOLO
                     }
                     DisposeNativeRecorder();
                 }
+                if (!EnsureMicrophonePermission()) return false;
 #endif
                 lock (completedFrameLock)
                 {
@@ -92,7 +96,9 @@ namespace HoloCube.QuestYOLO
             catch (Exception error)
             {
                 isRecording = false;
-                statusHint = "Video recording failed";
+                statusHint = IsMicrophoneError(error.Message)
+                    ? "Microphone unavailable\nAllow access and unmute the headset microphone"
+                    : "Video recording failed";
                 Debug.LogWarning("HoloCube video recording could not start: " + error.Message);
 #if UNITY_ANDROID && !UNITY_EDITOR
                 DisposeNativeRecorder();
@@ -350,7 +356,9 @@ namespace HoloCube.QuestYOLO
             {
                 statusHint = nativeStatus == "ERROR:No camera frames were captured."
                     ? "No video saved · hold B a little longer"
-                    : "Video recording failed · no video saved";
+                    : IsMicrophoneError(nativeStatus)
+                        ? "Microphone unavailable · no video saved\nAllow access and unmute the headset microphone"
+                        : "Video recording failed · no video saved";
                 isRecording = false;
             }
             else if (!isRecording && nativeStatus == "IDLE")
@@ -375,7 +383,40 @@ namespace HoloCube.QuestYOLO
             }
         }
 
+        private static bool IsMicrophoneError(string message)
+        {
+            return message != null && message.IndexOf("microphone", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
 #if UNITY_ANDROID && !UNITY_EDITOR
+        private bool EnsureMicrophonePermission()
+        {
+            if (UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.Microphone))
+            {
+                microphonePermissionPending = false;
+                return true;
+            }
+
+            // Ask once per app session; a denied request must not reopen every frame or B hold.
+            if (!microphonePermissionRequested)
+            {
+                microphonePermissionRequested = true;
+                microphonePermissionPending = true;
+                microphonePermissionCallbacks = new UnityEngine.Android.PermissionCallbacks();
+                microphonePermissionCallbacks.PermissionGranted += _ => microphonePermissionPending = false;
+                microphonePermissionCallbacks.PermissionDenied += _ => microphonePermissionPending = false;
+                microphonePermissionCallbacks.PermissionRequestDismissed += _ => microphonePermissionPending = false;
+                UnityEngine.Android.Permission.RequestUserPermission(
+                    UnityEngine.Android.Permission.Microphone, microphonePermissionCallbacks);
+            }
+
+            CanRetryStart = microphonePermissionPending;
+            statusHint = microphonePermissionPending
+                ? "Allow microphone access to record voice"
+                : "Microphone access required\nEnable it in HoloCube app permissions";
+            return false;
+        }
+
         private void DisposeNativeRecorder()
         {
             if (nativeRecorder == null) return;

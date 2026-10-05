@@ -155,6 +155,13 @@ You can disconnect the computer after installation. The weights and class names
 are included in the app; no server or model download is needed. Labels marked
 **~** use an estimated distance when scene depth is unavailable.
 
+Data collection videos include the headset microphone, so spoken notes are saved
+with the camera image in the same MP4. Allow microphone access when first holding
+**B**, then hold **B** to record and release it to stop both video and audio.
+If microphone permission is denied or the microphone is muted or unavailable,
+the app shows a recording error. Enable microphone access in HoloCube's app
+permissions and unmute the headset microphone before trying again.
+
 For scene, coordinate, decoder, and real `.pt` checks without an APK build,
 choose **HoloCube → Validate standalone pipeline**.
 For command-line builds, run `bash Tools/run-unity.sh Build` from this folder.
@@ -164,6 +171,19 @@ performance settings, and limitations; [validation results](VALIDATION.md) recor
 what has actually been tested. The bundled model is **Ultralytics YOLO26 nano**,
 with 80 COCO classes, an end-to-end `[1,300,6]` output, and 320 × 320 input. This sample detects objects; it does not track their
 identities across frames.
+
+## Quest screenshots
+
+Captured on a Quest 3S on October 5, 2026. These are original stereo headset
+screenshots; each image contains the left-eye and right-eye views.
+
+**Settings:** bold labels, icons, boxed values, and the saved-video notification.
+
+![HoloCube Settings on Quest](Docs/Screenshots/settings-quest.png)
+
+**About:** HoloCube logo and bold field labels, with inference paused for clarity.
+
+![About HoloCube on Quest](Docs/Screenshots/about-quest.png)
 
 ## Labels
 
