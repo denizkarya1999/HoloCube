@@ -383,12 +383,12 @@ namespace HoloCube.QuestYOLO
             switch (menuPage)
             {
                 case MenuPage.About:
-                    return "Name: HoloCube Research Project\n" +
-                        "Version: 1.0\n" +
-                        "Release Date: TBD\n" +
-                        "Developers: Deniz K. Acikbas and Ahmad Jayeb\n" +
-                        "Advisor: Xiao Zhang\n" +
-                        "Institution: University of Michigan-Dearborn";
+                    return "<b>Name:</b> HoloCube Research Project\n" +
+                        "<b>Version:</b> 1.0\n" +
+                        "<b>Release Date:</b> TBD\n" +
+                        "<b>Developers:</b> Deniz K. Acikbas and Ahmad Jayeb\n" +
+                        "<b>Advisor:</b> Xiao Zhang\n" +
+                        "<b>Institution:</b> University of Michigan-Dearborn";
                 case MenuPage.Settings:
                     return $"<size=32><b>Settings</b></size>\n" +
                         $"{(selectedSettingIndex == 0 ? ">" : " ")} <b>Confidence Thresholds</b>: {Confidence:0.00}\n" +
