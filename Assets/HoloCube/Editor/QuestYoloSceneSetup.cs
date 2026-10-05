@@ -128,7 +128,7 @@ namespace HoloCube.Editor
             var canvas = canvasObject.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
             var rect = canvasObject.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(1120, 240);
+            rect.sizeDelta = new Vector2(1120, 340);
             var background = canvasObject.AddComponent<Image>();
             background.color = new Color(0.015f, 0.03f, 0.055f, 0.8f);
             background.raycastTarget = false;

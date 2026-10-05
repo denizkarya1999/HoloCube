@@ -50,7 +50,12 @@ namespace HoloCube.QuestYOLO
         private bool bButtonHeld;
         private bool recordingAttemptedForCurrentHold;
         private MenuPage menuPage;
+        private int selectedSettingIndex;
+        private float nextSettingsJoystickActionTime;
         private string statusMessage = string.Empty;
+
+        private const float SettingsStickDeadzone = 0.6f;
+        private const float SettingsJoystickRepeatInterval = 0.22f;
 
         private IEnumerator Start()
         {
@@ -133,6 +138,40 @@ namespace HoloCube.QuestYOLO
 
             if (OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.LTouch))
                 menuPage = menuPage == MenuPage.Settings ? MenuPage.Home : MenuPage.Settings;
+
+            UpdateSettingsWithJoystick();
+        }
+
+        private void UpdateSettingsWithJoystick()
+        {
+            if (menuPage != MenuPage.Settings || Time.unscaledTime < nextSettingsJoystickActionTime)
+                return;
+
+            Vector2 stick = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.LTouch);
+            if (Mathf.Abs(stick.y) >= SettingsStickDeadzone)
+            {
+                selectedSettingIndex = stick.y > 0f ? 0 : 1;
+                nextSettingsJoystickActionTime = Time.unscaledTime + SettingsJoystickRepeatInterval;
+                return;
+            }
+
+            if (Mathf.Abs(stick.x) < SettingsStickDeadzone)
+                return;
+
+            int direction = stick.x > 0f ? 1 : -1;
+            if (selectedSettingIndex == 0)
+            {
+                Confidence = Mathf.Clamp(
+                    Mathf.Round((Confidence + direction * 0.05f) * 100f) / 100f,
+                    0.05f,
+                    1f);
+            }
+            else
+            {
+                MaxDetections = Mathf.Clamp(MaxDetections + direction, 1, 80);
+            }
+
+            nextSettingsJoystickActionTime = Time.unscaledTime + SettingsJoystickRepeatInterval;
         }
 
         private bool CameraIsReady()
@@ -246,10 +285,16 @@ namespace HoloCube.QuestYOLO
             {
                 case MenuPage.About:
                     return "About HoloCube\n" +
-                        "Quest passthrough camera with YOLO26 object detection and video data collection.";
+                        "Name: HoloCube Research Project\n" +
+                        "Version: 1.0\n" +
+                        "Developers: Deniz K. Acikbas and Ahmad Jayeb\n" +
+                        "Advisor: Xiao Zhang\n" +
+                        "Institution: University of Michigan-Dearborn";
                 case MenuPage.Settings:
-                    return $"Settings\nConfidence: {Confidence:P0} · Max detections: {MaxDetections}\n" +
-                        $"Inference interval: {DetectionInterval:0.00}s · Result age limit: {MaxResultAge:0.00}s";
+                    return $"Settings\n" +
+                        $"{(selectedSettingIndex == 0 ? ">" : " ")} Confidence threshold: {Confidence:0.00}\n" +
+                        $"{(selectedSettingIndex == 1 ? ">" : " ")} Maximum number of boxes: {MaxDetections}\n" +
+                        "Joystick up/down: select · left/right: adjust";
                 default:
                     return string.IsNullOrEmpty(statusMessage) ? "HoloCube" : statusMessage;
             }
