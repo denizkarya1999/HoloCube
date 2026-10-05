@@ -118,7 +118,7 @@ namespace HoloCube.Editor
             PlayerSettings.productName = "HoloCube";
             PlayerSettings.bundleVersion = "0.4";
             PlayerSettings.Android.bundleVersionCode = 4;
-            PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.holocube.questyolo");
+            PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.developer27.holocube");
             PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel32;

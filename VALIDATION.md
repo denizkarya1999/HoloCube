@@ -2,6 +2,9 @@
 
 Verified on October 4, 2026.
 
+Current builds use Android app ID `com.developer27.holocube`. The historical
+checks below used the earlier package ID and artifacts recorded here.
+
 ## Model and app
 
 - App: HoloCube 0.4 (code 4), package `com.holocube.questyolo`.
