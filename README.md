@@ -130,6 +130,8 @@ inside the 320 × 320 model input and fills the unused area with gray padding.
 
 ## Build, install, and use
 
+Android app ID: `com.developer27.holocube`.
+
 1. Clone this repository and run `bash Tools/setup-python.sh` on the development
    computer. Then open it in **Unity 6000.0.66f2** with Android Build Support.
    See the [development notes](Docs/DEVELOPMENT.md) for other host setups.
@@ -184,6 +186,14 @@ screenshots; each image contains the left-eye and right-eye views.
 **About:** HoloCube logo and bold field labels, with inference paused for clarity.
 
 ![About HoloCube on Quest](Docs/Screenshots/about-quest.png)
+
+**Detection:** bounding boxes, object labels, and confidence percentages.
+
+![HoloCube detection bounding boxes on Quest](Docs/Screenshots/bounding-boxes-quest.png)
+
+**Controller Guide:** button mappings shown with the left controller's Menu button.
+
+![HoloCube Controller Guide on Quest](Docs/Screenshots/guide-quest.png)
 
 ## Labels
 
