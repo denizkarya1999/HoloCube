@@ -28,6 +28,7 @@ namespace HoloCube.QuestYOLO
         [Min(0.1f)] public float MaxResultAge = 0.75f;
 
         private YOLOInference inference;
+        private CameraVideoCapture videoCapture;
         private IEnumerator pendingDetection;
         private DateTime lastCameraTimestamp;
         private float nextCaptureTime;
@@ -35,9 +36,13 @@ namespace HoloCube.QuestYOLO
         private bool applicationPaused;
         private bool hasFocus = true;
         private bool failed;
+        private bool bButtonHeld;
+        private bool recordingAttemptedForCurrentHold;
+        private string statusMessage = string.Empty;
 
         private IEnumerator Start()
         {
+            videoCapture = new CameraVideoCapture();
             SetStatus("HoloCube · Loading object detection…");
             yield return null; // Let the loading message appear before loading the model.
 
@@ -48,7 +53,7 @@ namespace HoloCube.QuestYOLO
 
                 inference = new YOLOInference(Model);
                 RequestPermissions();
-                SetStatus("Waiting for camera permission…\nB: retry permission request");
+                SetStatus("Waiting for camera permission…\nAllow camera access to begin");
             }
             catch (Exception error)
             {
@@ -58,20 +63,44 @@ namespace HoloCube.QuestYOLO
 
         private void Update()
         {
-            if (failed || inference == null) return;
+            if (failed) return;
 
             try
             {
                 ReadButtons();
-                if (!inference.IsReady)
-                {
-                    SetStatus("HoloCube · Loading .pt model…");
-                    return;
-                }
+                videoCapture?.Poll();
+                RefreshStatus();
+
                 if (!CameraIsReady()) return;
 
+                var cameraImage = CameraAccess.GetTexture();
+                if (cameraImage == null)
+                {
+                    StopRecording();
+                    CancelDetection();
+                    Overlay.Clear();
+                    SetStatus("Waiting for the Quest camera…");
+                    return;
+                }
+
+                UpdateVideoRecording(cameraImage);
+
+                if (inference == null || !inference.IsReady)
+                {
+                    SetStatus("HoloCube · Loading model…");
+                    return;
+                }
+
+                if (userPaused)
+                {
+                    CancelDetection();
+                    Overlay.Clear();
+                    SetStatus("Detection paused\nA: resume");
+                    return;
+                }
+
                 // One image at a time; the Android worker runs PyTorch in the background.
-                if (pendingDetection == null) CaptureImage();
+                if (pendingDetection == null) CaptureImage(cameraImage);
                 ContinueDetection();
             }
             catch (Exception error)
@@ -83,33 +112,56 @@ namespace HoloCube.QuestYOLO
         private void ReadButtons()
         {
             if (OVRInput.GetDown(OVRInput.Button.One)) userPaused = !userPaused;
-            if (OVRInput.GetDown(OVRInput.Button.Two)) RequestPermissions();
+            bButtonHeld = OVRInput.Get(OVRInput.Button.Two);
         }
 
         private bool CameraIsReady()
         {
             string waitMessage = null;
-            if (applicationPaused || !hasFocus || userPaused)
-                waitMessage = "Detection paused\nA: resume";
+            if (applicationPaused || !hasFocus)
+                waitMessage = "Camera paused";
+            else if (CameraAccess == null)
+                waitMessage = "Camera is not configured";
             else if (!OVRPermissionsRequester.IsPermissionGranted(OVRPermissionsRequester.Permission.PassthroughCameraAccess))
-                waitMessage = "Camera access is required\nAllow it in app permissions · B: retry";
+                waitMessage = "Camera access is required\nAllow it in app permissions";
             else if (!CameraAccess.IsPlaying)
                 waitMessage = "Waiting for the Quest camera…";
 
             if (waitMessage == null) return true;
 
+            StopRecording();
             CancelDetection();
-            Overlay.Clear();
+            if (Overlay != null) Overlay.Clear();
             SetStatus(waitMessage);
             return false;
         }
 
-        private void CaptureImage()
+        private void UpdateVideoRecording(Texture cameraImage)
+        {
+            if (!bButtonHeld)
+            {
+                recordingAttemptedForCurrentHold = false;
+                StopRecording();
+                return;
+            }
+
+            if (videoCapture == null) return;
+
+            if (!recordingAttemptedForCurrentHold)
+            {
+                recordingAttemptedForCurrentHold = true;
+                videoCapture.TryStart(cameraImage);
+            }
+
+            if (videoCapture.IsRecording)
+                videoCapture.CaptureFrame(cameraImage, CameraAccess.Timestamp);
+        }
+
+        private void CaptureImage(Texture image)
         {
             if (Time.unscaledTime < nextCaptureTime) return;
             if (CameraAccess.Timestamp == lastCameraTimestamp) return;
 
-            var image = CameraAccess.GetTexture();
             if (image == null) return;
 
             lastCameraTimestamp = CameraAccess.Timestamp;
@@ -154,7 +206,24 @@ namespace HoloCube.QuestYOLO
 
         private void SetStatus(string message)
         {
-            if (StatusLabel != null) StatusLabel.text = message;
+            statusMessage = message;
+            RefreshStatus();
+        }
+
+        private void RefreshStatus()
+        {
+            if (StatusLabel == null) return;
+            string controls = videoCapture != null
+                ? videoCapture.StatusHint
+                : "Hold B: Record Video for Data Collection";
+            StatusLabel.text = string.IsNullOrEmpty(statusMessage)
+                ? controls
+                : statusMessage + "\n" + controls;
+        }
+
+        private void StopRecording()
+        {
+            videoCapture?.Stop();
         }
 
         private void ShowError(Exception error)
@@ -163,6 +232,8 @@ namespace HoloCube.QuestYOLO
             Debug.LogException(error, this);
             try
             {
+                StopRecording();
+                videoCapture?.StopAndWait();
                 CancelDetection();
             }
             catch (Exception cleanupError)
@@ -181,11 +252,22 @@ namespace HoloCube.QuestYOLO
             (pending as IDisposable)?.Dispose();
         }
 
-        private void OnApplicationPause(bool paused) => applicationPaused = paused;
-        private void OnApplicationFocus(bool focused) => hasFocus = focused;
+        private void OnApplicationPause(bool paused)
+        {
+            applicationPaused = paused;
+            if (paused) StopRecording();
+        }
+
+        private void OnApplicationFocus(bool focused)
+        {
+            hasFocus = focused;
+            if (!focused) StopRecording();
+        }
 
         private void OnDisable()
         {
+            StopRecording();
+            videoCapture?.StopAndWait();
             CancelDetection();
             if (Overlay != null) Overlay.Clear();
         }
@@ -194,10 +276,11 @@ namespace HoloCube.QuestYOLO
         {
             try
             {
-                CancelDetection();
+                videoCapture?.Dispose();
             }
             finally
             {
+                videoCapture = null;
                 inference?.Dispose();
                 inference = null;
             }
