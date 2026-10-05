@@ -139,6 +139,11 @@ inside the 320 × 320 model input and fills the unused area with gray padding.
 4. Open **HoloCube** in the headset and allow camera access.
 5. On startup, only detection boxes and labels with confidence percentages are shown. Press the left controller’s **Menu (three lines)** button to show or hide the controls. **A** toggles YOLO inference; “Inference Mode: Off” disappears after three seconds. Hold **B** for YOLO data collection; a red circle and **Recording** appear above your view while recording. Release **B** to stop: the indicator disappears, followed by saving progress and the saved filename for six seconds. MP4s are saved in `Movies/HoloCube` on the headset. Recording failures also appear briefly in the same area. Press **X** to open About HoloCube and **Y** to view Settings. In Settings, use the left joystick up/down to select the confidence threshold or maximum number of boxes, then left/right to adjust the selected value.
 
+Dialogs and recording messages use Michigan Maize text (`#FFCB05`) on Michigan Blue
+backgrounds (`#00274C`), following the [U-M color palette](https://brand.umich.edu/wp-content/uploads/2025/02/250027-U-M-Style-Guide-February2025.pdf).
+Maize borders and vector icons identify the guide, About, Settings, inference-off,
+saving, saved, and warning messages.
+
 You can disconnect the computer after installation. The weights and class names
 are included in the app; no server or model download is needed. Labels marked
 **~** use an estimated distance when scene depth is unavailable.

@@ -26,8 +26,10 @@ namespace HoloCube.QuestYOLO
         public YOLOModel Model;
         public DetectionOverlay Overlay;
         public Text StatusLabel;
+        public DialogIcon StatusIcon;
         public GameObject RecordingIndicator;
         public Text RecordingFeedbackLabel;
+        public DialogIcon RecordingFeedbackIcon;
 
         [Header("Which detections to show")]
         [Tooltip("Minimum confidence: 0.35 means 35%.")]
@@ -330,6 +332,11 @@ namespace HoloCube.QuestYOLO
                 statusPanel.SetActive(showStatusPanel);
             if (!showStatusPanel) return;
 
+            StatusIcon?.SetIcon(failed ? DialogIcon.Kind.Warning :
+                showControllerHelp ? DialogIcon.Kind.Controls :
+                showInferenceOffStatus ? DialogIcon.Kind.InferenceOff :
+                menuPage == MenuPage.Settings ? DialogIcon.Kind.Settings : DialogIcon.Kind.Cube);
+
             if (showControllerHelp && !failed)
                 StatusLabel.text = ControllerMenu + "\nPress the Menu button to hide controls";
             else if (showInferenceOffStatus)
@@ -392,6 +399,11 @@ namespace HoloCube.QuestYOLO
             if (showFeedback) RecordingFeedbackLabel.text = showUnavailable
                 ? "Cannot record\n" + recordingUnavailableReason
                 : hint;
+            if (showFeedback)
+                RecordingFeedbackIcon?.SetIcon(showUnavailable ? DialogIcon.Kind.Warning :
+                    saving ? DialogIcon.Kind.Saving :
+                    hint.StartsWith("Saved to ", StringComparison.Ordinal)
+                        ? DialogIcon.Kind.Saved : DialogIcon.Kind.Warning);
         }
 
         private void ShowError(Exception error)
