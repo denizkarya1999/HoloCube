@@ -10,6 +10,17 @@ namespace HoloCube.QuestYOLO
     /// <summary>Start here: camera image → YOLO detections → boxes in the headset.</summary>
     public sealed class MainApp : MonoBehaviour
     {
+        private enum MenuPage
+        {
+            Home,
+            About,
+            Settings
+        }
+
+        private const string ControllerMenu =
+            "Press A: YOLO Inference · Hold B: YOLO Data Collection\n" +
+            "Press X: About HoloCube · Press Y: Settings";
+
         [Header("Scene connections")]
         public PassthroughCameraAccess CameraAccess;
         public YOLOModel Model;
@@ -38,6 +49,7 @@ namespace HoloCube.QuestYOLO
         private bool failed;
         private bool bButtonHeld;
         private bool recordingAttemptedForCurrentHold;
+        private MenuPage menuPage;
         private string statusMessage = string.Empty;
 
         private IEnumerator Start()
@@ -95,7 +107,7 @@ namespace HoloCube.QuestYOLO
                 {
                     CancelDetection();
                     Overlay.Clear();
-                    SetStatus("Detection paused\nA: resume");
+                    SetStatus("YOLO inference paused");
                     return;
                 }
 
@@ -111,8 +123,16 @@ namespace HoloCube.QuestYOLO
 
         private void ReadButtons()
         {
-            if (OVRInput.GetDown(OVRInput.Button.One)) userPaused = !userPaused;
-            bButtonHeld = OVRInput.Get(OVRInput.Button.Two);
+            if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
+                userPaused = !userPaused;
+
+            bButtonHeld = OVRInput.Get(OVRInput.Button.Two, OVRInput.Controller.RTouch);
+
+            if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.LTouch))
+                menuPage = menuPage == MenuPage.About ? MenuPage.Home : MenuPage.About;
+
+            if (OVRInput.GetDown(OVRInput.Button.Two, OVRInput.Controller.LTouch))
+                menuPage = menuPage == MenuPage.Settings ? MenuPage.Home : MenuPage.Settings;
         }
 
         private bool CameraIsReady()
@@ -192,7 +212,7 @@ namespace HoloCube.QuestYOLO
             else
                 Overlay.Clear();
 
-            SetStatus($"HoloCube · {detections.Count} objects · {age * 1000:0} ms\nA: pause · ~ means approximate depth");
+            SetStatus($"HoloCube · {detections.Count} objects · {age * 1000:0} ms · ~ means approximate depth");
         }
 
         private void RequestPermissions()
@@ -213,12 +233,26 @@ namespace HoloCube.QuestYOLO
         private void RefreshStatus()
         {
             if (StatusLabel == null) return;
-            string controls = videoCapture != null
-                ? videoCapture.StatusHint
-                : "Hold B: Record Video for Data Collection";
-            StatusLabel.text = string.IsNullOrEmpty(statusMessage)
-                ? controls
-                : statusMessage + "\n" + controls;
+            string pageMessage = GetMenuPageMessage();
+            string videoStatus = videoCapture != null ? videoCapture.StatusHint : string.Empty;
+            StatusLabel.text = string.IsNullOrEmpty(videoStatus)
+                ? pageMessage + "\n" + ControllerMenu
+                : pageMessage + "\n" + ControllerMenu + "\n" + videoStatus;
+        }
+
+        private string GetMenuPageMessage()
+        {
+            switch (menuPage)
+            {
+                case MenuPage.About:
+                    return "About HoloCube\n" +
+                        "Quest passthrough camera with YOLO26 object detection and video data collection.";
+                case MenuPage.Settings:
+                    return $"Settings\nConfidence: {Confidence:P0} · Max detections: {MaxDetections}\n" +
+                        $"Inference interval: {DetectionInterval:0.00}s · Result age limit: {MaxResultAge:0.00}s";
+                default:
+                    return string.IsNullOrEmpty(statusMessage) ? "HoloCube" : statusMessage;
+            }
         }
 
         private void StopRecording()

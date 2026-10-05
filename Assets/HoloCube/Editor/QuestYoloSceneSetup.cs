@@ -128,7 +128,7 @@ namespace HoloCube.Editor
             var canvas = canvasObject.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
             var rect = canvasObject.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(760, 120);
+            rect.sizeDelta = new Vector2(1120, 240);
             var background = canvasObject.AddComponent<Image>();
             background.color = new Color(0.015f, 0.03f, 0.055f, 0.8f);
             background.raycastTarget = false;
@@ -140,7 +140,7 @@ namespace HoloCube.Editor
             text.rectTransform.offsetMin = new Vector2(15, 10);
             text.rectTransform.offsetMax = new Vector2(-15, -10);
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 26;
+            text.fontSize = 22;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = Color.white;
             text.raycastTarget = false;

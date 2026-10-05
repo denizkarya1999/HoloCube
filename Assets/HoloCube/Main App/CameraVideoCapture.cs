@@ -12,7 +12,7 @@ namespace HoloCube.QuestYOLO
         private const int FrameRate = 20;
         private const int BitRate = 1500000;
         private const float MinimumFrameInterval = 1f / FrameRate;
-        private const string DefaultHint = "Hold B: Record Video for Data Collection";
+        private const string DefaultHint = "";
 
 #if UNITY_ANDROID && !UNITY_EDITOR
         private AndroidJavaObject nativeRecorder;
