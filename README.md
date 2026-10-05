@@ -147,6 +147,9 @@ Dialogs use larger 28-point text, and About features a maize cube-and-HoloCube
 wordmark above the project details.
 Rounded cards, soft shadows, maize accents, icon badges, and bold headings keep
 the dialog styling consistent throughout the app.
+Settings presents **Confidence Thresholds** and **Number of boxes** as bold rows
+with individual icons and boxed values; the brighter value border marks the
+joystick selection. The About logo displays only **HoloCube**.
 
 You can disconnect the computer after installation. The weights and class names
 are included in the app; no server or model download is needed. Labels marked

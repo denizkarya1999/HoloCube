@@ -7,7 +7,7 @@ namespace HoloCube.QuestYOLO
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class DialogIcon : MaskableGraphic
     {
-        public enum Kind { Cube, Controls, Settings, InferenceOff, Saving, Saved, Warning }
+        public enum Kind { Cube, Controls, Settings, InferenceOff, Saving, Saved, Warning, Confidence, Boxes }
 
         [SerializeField] private Kind icon;
         private Vector2 origin;
@@ -76,6 +76,22 @@ namespace HoloCube.QuestYOLO
                         new Vector2(0.1f, 0.18f));
                     Line(mesh, new Vector2(0.5f, 0.63f), new Vector2(0.5f, 0.43f), 0.075f);
                     Disc(mesh, new Vector2(0.5f, 0.3f), 0.04f);
+                    break;
+                case Kind.Confidence:
+                    Ring(mesh, new Vector2(0.5f, 0.5f), 0.31f);
+                    Ring(mesh, new Vector2(0.5f, 0.5f), 0.15f, 0.05f);
+                    Disc(mesh, new Vector2(0.5f, 0.5f), 0.035f);
+                    Line(mesh, new Vector2(0.5f, 0.81f), new Vector2(0.5f, 0.9f));
+                    Line(mesh, new Vector2(0.5f, 0.1f), new Vector2(0.5f, 0.19f));
+                    Line(mesh, new Vector2(0.1f, 0.5f), new Vector2(0.19f, 0.5f));
+                    Line(mesh, new Vector2(0.81f, 0.5f), new Vector2(0.9f, 0.5f));
+                    break;
+                case Kind.Boxes:
+                    Path(mesh, true, new Vector2(0.12f, 0.18f), new Vector2(0.65f, 0.18f),
+                        new Vector2(0.65f, 0.66f), new Vector2(0.12f, 0.66f));
+                    Path(mesh, false, new Vector2(0.35f, 0.78f), new Vector2(0.35f, 0.88f),
+                        new Vector2(0.88f, 0.88f), new Vector2(0.88f, 0.4f),
+                        new Vector2(0.77f, 0.4f));
                     break;
             }
         }

@@ -29,6 +29,7 @@ namespace HoloCube.QuestYOLO
         public DialogIcon StatusIcon;
         public GameObject StatusIconContainer;
         public GameObject AboutLogo;
+        public SettingsPanel SettingsView;
         public GameObject RecordingIndicator;
         public Text RecordingFeedbackLabel;
         public DialogIcon RecordingFeedbackIcon;
@@ -335,12 +336,25 @@ namespace HoloCube.QuestYOLO
             if (!showStatusPanel) return;
 
             bool showAbout = menuPage == MenuPage.About && !showControllerHelp && !failed;
+            bool showSettings = menuPage == MenuPage.Settings && !showControllerHelp &&
+                !failed && SettingsView != null;
+            if (SettingsView != null && SettingsView.gameObject.activeSelf != showSettings)
+                SettingsView.gameObject.SetActive(showSettings);
+            bool showStatusText = !showSettings;
+            if (StatusLabel.gameObject.activeSelf != showStatusText)
+                StatusLabel.gameObject.SetActive(showStatusText);
             if (AboutLogo != null && AboutLogo.activeSelf != showAbout)
                 AboutLogo.SetActive(showAbout);
             GameObject statusIconObject = StatusIconContainer != null
                 ? StatusIconContainer : StatusIcon != null ? StatusIcon.gameObject : null;
-            if (statusIconObject != null && statusIconObject.activeSelf == showAbout)
-                statusIconObject.SetActive(!showAbout);
+            bool showStatusIcon = !showAbout && !showSettings;
+            if (statusIconObject != null && statusIconObject.activeSelf != showStatusIcon)
+                statusIconObject.SetActive(showStatusIcon);
+            if (showSettings)
+            {
+                SettingsView.Refresh(Confidence, MaxDetections, selectedSettingIndex);
+                return;
+            }
             Vector2 textInsetMin = showAbout ? new Vector2(24, 24) : new Vector2(104, 20);
             Vector2 textInsetMax = showAbout ? new Vector2(-24, -132) : new Vector2(-24, -20);
             if (StatusLabel.rectTransform.offsetMin != textInsetMin)
@@ -353,7 +367,9 @@ namespace HoloCube.QuestYOLO
                 showInferenceOffStatus ? DialogIcon.Kind.InferenceOff :
                 menuPage == MenuPage.Settings ? DialogIcon.Kind.Settings : DialogIcon.Kind.Cube);
 
-            if (showControllerHelp && !failed)
+            if (failed)
+                StatusLabel.text = statusMessage;
+            else if (showControllerHelp)
                 StatusLabel.text = "<size=32><b>Controller Guide</b></size>\n" +
                     ControllerMenu + "\nPress the Menu button to hide controls";
             else if (showInferenceOffStatus)
@@ -375,8 +391,8 @@ namespace HoloCube.QuestYOLO
                         "Institution: University of Michigan-Dearborn";
                 case MenuPage.Settings:
                     return $"<size=32><b>Settings</b></size>\n" +
-                        $"{(selectedSettingIndex == 0 ? ">" : " ")} Confidence threshold: {Confidence:0.00}\n" +
-                        $"{(selectedSettingIndex == 1 ? ">" : " ")} Maximum number of boxes: {MaxDetections}\n" +
+                        $"{(selectedSettingIndex == 0 ? ">" : " ")} <b>Confidence Thresholds</b>: {Confidence:0.00}\n" +
+                        $"{(selectedSettingIndex == 1 ? ">" : " ")} <b>Number of boxes</b>: {MaxDetections}\n" +
                         "Joystick up/down: select · left/right: adjust";
                 default:
                     return string.IsNullOrEmpty(statusMessage) ? "HoloCube" : statusMessage;

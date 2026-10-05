@@ -35,6 +35,7 @@ namespace HoloCube.Editor
             app.StatusIcon = statusIcon;
             app.StatusIconContainer = statusIcon.transform.parent.gameObject;
             app.AboutLogo = CreateAboutLogo(app.StatusLabel.transform.parent);
+            app.SettingsView = CreateSettings(app.StatusLabel.transform.parent);
             app.RecordingIndicator = CreateRecordingIndicator(rig.centerEyeAnchor);
             app.RecordingFeedbackLabel = CreateRecordingFeedback(rig.centerEyeAnchor, out var feedbackIcon);
             app.RecordingFeedbackIcon = feedbackIcon;
@@ -260,7 +261,7 @@ namespace HoloCube.Editor
             titleObject.transform.SetParent(logo, false);
             var title = titleObject.GetComponent<Text>();
             title.rectTransform.anchorMin = title.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            title.rectTransform.anchoredPosition = new Vector2(86, 14);
+            title.rectTransform.anchoredPosition = new Vector2(86, 0);
             title.rectTransform.sizeDelta = new Vector2(260, 54);
             title.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             title.fontSize = 40;
@@ -269,19 +270,6 @@ namespace HoloCube.Editor
             title.color = DialogTextColor;
             title.raycastTarget = false;
             title.text = "HoloCube";
-
-            var subtitleObject = new GameObject("Research Project", typeof(RectTransform), typeof(Text));
-            subtitleObject.transform.SetParent(logo, false);
-            var subtitle = subtitleObject.GetComponent<Text>();
-            subtitle.rectTransform.anchorMin = subtitle.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            subtitle.rectTransform.anchoredPosition = new Vector2(86, -23);
-            subtitle.rectTransform.sizeDelta = new Vector2(260, 34);
-            subtitle.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            subtitle.fontSize = 22;
-            subtitle.alignment = TextAnchor.MiddleLeft;
-            subtitle.color = DialogTextColor;
-            subtitle.raycastTarget = false;
-            subtitle.text = "Research Project";
 
             var dividerObject = new GameObject("About Divider", typeof(RectTransform), typeof(Image));
             dividerObject.transform.SetParent(logo, false);
@@ -294,6 +282,82 @@ namespace HoloCube.Editor
 
             logoObject.SetActive(false);
             return logoObject;
+        }
+
+        private static SettingsPanel CreateSettings(Transform panel)
+        {
+            var rootObject = new GameObject("Settings View", typeof(RectTransform), typeof(SettingsPanel));
+            rootObject.transform.SetParent(panel, false);
+            var root = rootObject.GetComponent<RectTransform>();
+            root.anchorMin = Vector2.zero;
+            root.anchorMax = Vector2.one;
+            root.sizeDelta = Vector2.zero;
+            root.anchoredPosition = Vector2.zero;
+            var settings = rootObject.GetComponent<SettingsPanel>();
+
+            CreateSettingsText(root, "Settings Heading", "Settings", new Vector2(0, 140),
+                new Vector2(900, 64), 36, TextAnchor.MiddleCenter, true);
+            CreateSettingsRow(root, "Confidence Thresholds", DialogIcon.Kind.Confidence, 40,
+                out var confidenceBox, out var confidenceValue);
+            settings.ConfidenceBox = confidenceBox;
+            settings.ConfidenceValue = confidenceValue;
+            CreateSettingsRow(root, "Number of boxes", DialogIcon.Kind.Boxes, -54,
+                out var boxCountBox, out var boxCountValue);
+            settings.BoxCountBox = boxCountBox;
+            settings.BoxCountValue = boxCountValue;
+
+            var dividerObject = new GameObject("Settings Divider", typeof(RectTransform), typeof(Image));
+            dividerObject.transform.SetParent(root, false);
+            var divider = dividerObject.GetComponent<Image>();
+            divider.rectTransform.anchorMin = divider.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            divider.rectTransform.anchoredPosition = new Vector2(0, -109);
+            divider.rectTransform.sizeDelta = new Vector2(960, 1);
+            divider.color = WithAlpha(DialogTextColor, 0.2f);
+            divider.raycastTarget = false;
+            CreateSettingsText(root, "Joystick Help", "Joystick up/down: select · left/right: adjust",
+                new Vector2(0, -145), new Vector2(960, 48), 26, TextAnchor.MiddleCenter);
+
+            settings.Refresh(0.35f, 24, 0);
+            rootObject.SetActive(false);
+            return settings;
+        }
+
+        private static void CreateSettingsRow(Transform panel, string label, DialogIcon.Kind kind,
+            float y, out DialogPanel valueBox, out Text value)
+        {
+            var icon = CreateDialogIcon(panel, kind);
+            var iconGroup = (RectTransform)icon.transform.parent;
+            iconGroup.gameObject.name = label + " Icon";
+            iconGroup.anchorMin = iconGroup.anchorMax = new Vector2(0.5f, 0.5f);
+            iconGroup.anchoredPosition = new Vector2(-440, y);
+            CreateSettingsText(panel, label + " Label", label, new Vector2(-78, y),
+                new Vector2(600, 68), 30, TextAnchor.MiddleLeft, true);
+
+            valueBox = CreateCardLayer(panel, label + " Value Box", DialogBackgroundColor, 14, 1.5f,
+                WithAlpha(DialogTextColor, 0.4f), Vector2.zero, new Vector2(160, 68));
+            valueBox.rectTransform.anchorMin = valueBox.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            valueBox.rectTransform.anchoredPosition = new Vector2(395, y);
+            value = CreateSettingsText(valueBox.transform, label + " Value", string.Empty, Vector2.zero,
+                new Vector2(140, 60), 32, TextAnchor.MiddleCenter, true);
+        }
+
+        private static Text CreateSettingsText(Transform parent, string name, string value,
+            Vector2 position, Vector2 size, int fontSize, TextAnchor alignment, bool bold = false)
+        {
+            var textObject = new GameObject(name, typeof(RectTransform), typeof(Text));
+            textObject.transform.SetParent(parent, false);
+            var text = textObject.GetComponent<Text>();
+            text.rectTransform.anchorMin = text.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            text.rectTransform.anchoredPosition = position;
+            text.rectTransform.sizeDelta = size;
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = fontSize;
+            text.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
+            text.alignment = alignment;
+            text.color = DialogTextColor;
+            text.raycastTarget = false;
+            text.text = value;
+            return text;
         }
 
         private static DialogIcon CreateDialogIcon(Transform panel, DialogIcon.Kind kind)
@@ -337,7 +401,7 @@ namespace HoloCube.Editor
             accent.raycastTarget = false;
         }
 
-        private static void CreateCardLayer(Transform panel, string name, Color fill, float radius,
+        private static DialogPanel CreateCardLayer(Transform panel, string name, Color fill, float radius,
             float borderWidth, Color borderColor, Vector2 position, Vector2 size)
         {
             var layerObject = new GameObject(name, typeof(RectTransform), typeof(DialogPanel));
@@ -352,6 +416,7 @@ namespace HoloCube.Editor
             layer.BorderWidth = borderWidth;
             layer.BorderColor = borderColor;
             layer.raycastTarget = false;
+            return layer;
         }
 
         private static Color WithAlpha(Color color, float alpha) =>
