@@ -2,7 +2,6 @@ using HoloCube.QuestYOLO;
 using Meta.XR;
 using PassthroughCameraSamples.MultiObjectDetection;
 using PassthroughCameraSamples.StartScene;
-using Unity.InferenceEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -80,9 +79,8 @@ namespace HoloCube.Editor
                 model = ScriptableObject.CreateInstance<YOLOModel>();
                 AssetDatabase.CreateAsset(model, ModelPath);
             }
-            model.Weights = AssetDatabase.LoadAssetAtPath<ModelAsset>(ModelFolder + "yolo26n.onnx");
             model.Labels = AssetDatabase.LoadAssetAtPath<TextAsset>(ModelFolder + "coco.names.txt");
-            model.Backend = BackendType.GPUCompute;
+            model.CpuThreads = 2;
             model.LetterboxShader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/HoloCube/YOLO Inference/Letterbox.shader");
             EditorUtility.SetDirty(model);
             return model;
@@ -109,8 +107,8 @@ namespace HoloCube.Editor
         {
             PlayerSettings.companyName = "HoloCube";
             PlayerSettings.productName = "HoloCube";
-            PlayerSettings.bundleVersion = "0.3";
-            PlayerSettings.Android.bundleVersionCode = 3;
+            PlayerSettings.bundleVersion = "0.4";
+            PlayerSettings.Android.bundleVersionCode = 4;
             PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.holocube.questyolo");
             PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;

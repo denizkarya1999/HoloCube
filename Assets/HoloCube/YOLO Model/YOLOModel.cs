@@ -1,32 +1,22 @@
 using System;
-using Unity.InferenceEngine;
 using UnityEngine;
 
 namespace HoloCube.QuestYOLO
 {
-    /// <summary>The bundled weights, class names, and choice of GPU or CPU.</summary>
+    /// <summary>The original checkpoint, object names, and CPU settings.</summary>
     [CreateAssetMenu(menuName = "HoloCube/YOLO Model")]
     public sealed class YOLOModel : ScriptableObject
     {
-        [Tooltip("The YOLO26n end-to-end .onnx file containing the trained network.")]
-        public ModelAsset Weights;
-        [Tooltip("One object class name per line. The line number is its class ID.")]
+        public const string CheckpointFile = "yolo26n.pt";
+        public const string CheckpointHash = "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef";
+        public const int InputSize = 320;
+
+        [Tooltip("One object name per line, in class-ID order.")]
         public TextAsset Labels;
-        [Tooltip("GPUCompute runs the network on the headset GPU.")]
-        public BackendType Backend = BackendType.GPUCompute;
-        [Tooltip("Keeps image proportions and adds padding before inference.")]
+        [Tooltip("Background CPU threads used by PyTorch on the headset.")]
+        [Range(1, 4)] public int CpuThreads = 2;
+        [Tooltip("Fits the camera image into the model input with gray padding.")]
         public Shader LetterboxShader;
-
-        public Model Load()
-        {
-            if (Weights == null || Labels == null)
-                throw new InvalidOperationException("Assign the bundled YOLO model and labels.");
-
-            var model = ModelLoader.Load(Weights);
-            if (model.inputs.Count != 1 || model.outputs.Count != 1)
-                throw new InvalidOperationException("Expected YOLO26 with one image input and one end-to-end detection output.");
-            return model;
-        }
 
         public string[] LoadLabels()
         {

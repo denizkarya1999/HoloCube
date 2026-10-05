@@ -1,63 +1,74 @@
-# HoloCube build validation
+# HoloCube original .pt validation
 
 Verified on October 4, 2026.
 
 ## Model and app
 
-- Active weights: Ultralytics YOLO26 nano (`yolo26n.onnx`), exported from the
-  official checkpoint with Ultralytics 8.4.56, PyTorch 2.12.0, ONNX 1.21.0.
-- Input: `[1,3,320,320]` RGB floats in `[0,1]`, with aspect-preserving resizing
-  and centered gray padding. Output: `[1,300,6]` end-to-end detection rows.
-- YOLO26 model checksum and the 80-entry COCO label file verified.
-- Export options, checkpoint URL, and hashes are recorded in
-  `Assets/HoloCube/YOLO Model/provenance.json`.
-- App name: HoloCube. APK version: 0.3 (code 3), package `com.holocube.questyolo`.
+- App: HoloCube 0.4 (code 4), package `com.holocube.questyolo`.
+- Model: original Ultralytics `yolo26n.pt`; no ONNX, TorchScript, or other model export.
+- Checkpoint SHA-256: `9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef`.
+- The checkpoint extracted from the APK's embedded Python archive has the exact
+  same SHA-256 as the original downloaded file.
+- Embedded runtime: Python 3.8, PyTorch 1.8.1, NumPy 1.19.5, Chaquopy 16.1.0.
+- Input `[1,3,320,320]` RGB floats in `[0,1]`; output `[1,300,6]` end-to-end rows.
+- Export-free loading uses inference-only layer methods adapted from Ultralytics
+  8.4.56 for this exact checkpoint. Arbitrary checkpoints are not supported.
 
-## Passed
+## Passed on the development computer
 
 - Unity 6000.0.66f2 compilation and Android ARM64/IL2CPP/Vulkan APK build.
-- Rebuilt after renaming the app to HoloCube; generated Android resources confirm
-  the display name, version 0.3, code 3, and unchanged package identifier.
-- Saved scene connections, YOLO26 model, names, and letterbox shader references.
-- Landscape/portrait/odd-sized image padding and original-image box mapping.
-- Confidence and class filtering, invalid-value rejection, detection limits,
-  empty confident results, and rejection of an incompatible output shape.
-- End-to-end results are not passed through NMS again.
-- **Actual Unity CPU inference:** a bus-image tensor produces the same five
-  detections as the PyTorch checkpoint (four people and one bus). Class IDs agree;
-  score differences are below 0.001 and box-vector differences below 1 original
-  image pixel. This is a functional parity check, not a COCO accuracy benchmark.
-- **Actual Unity GPU inference:** the full runtime `YOLOInference.Detect` pipeline
-  produces four people and one bus from the same image on the workstation's
-  NVIDIA GeForce RTX 3050 Ti Laptop GPU using Vulkan.
-- GPU shader checks confirm gray padding, top/bottom orientation, and restoration
-  of sRGB camera values when Unity samples in linear color space.
-- Documentation links and source/documentation whitespace checks pass.
+- Scene wiring, original checkpoint hash, 80 labels, and shader references.
+- Letterbox coordinate mapping; confidence/class checks; detection limits;
+  invalid-value and incompatible-output rejection; no second NMS pass.
+- Direct PyTorch 1.8.1 inference from the unchanged checkpoint produces four
+  people and one bus, matching the independent PyTorch 2.12.0 fixture within
+  0.001 confidence and 1 original-image pixel.
+- Actual Vulkan GPU image preparation on the desktop NVIDIA RTX 3050 Ti passes
+  padding, orientation, sRGB, and RGBA-readback checks.
+- Those real Unity RGBA pixels also produce four people and one bus through
+  the new Python preprocessing and direct checkpoint inference.
+- APK inspection confirms the original `.pt` and reference fixture are embedded
+  in `assets/chaquopy/app.imy`, with no exported model in that Python archive.
 
-## Headset status
+## Passed on the connected Quest
 
-The earlier YOLOv9 APK was installed successfully on the connected Quest on
-October 4, 2026. This YOLO26 APK has not been installed or run on the headset.
-Quest GPU compatibility, live camera permissions, overlay alignment, frame rate,
-and sustained thermal behavior still require device testing. Desktop GPU success
-is not a Quest performance measurement.
+- Installed the APK over the existing app while preserving its data.
+- Cold launch completed with no crash reported by the Quest launch verifier.
+- Embedded Python/PyTorch loaded the original checkpoint on the headset.
+- The startup reference check passed on the headset: five detections match the
+  independent fixture's class IDs, confidence scores, and box coordinates.
+- The live camera path returned 300 detection rows from a captured frame.
+- The first logged camera-frame worker call took **155 ms**. This is one sample
+  including Python input/output handling, not sustained FPS or total AR latency.
 
-## APK and logs
+Headset log markers:
 
-Build outputs and logs are local artifacts excluded from Git. Rebuild them with
-`Tools/run-unity.sh` or the Unity menu.
+```text
+HOLOCUBE_PT_DEVICE_PARITY_PASSED: original checkpoint; five reference detections match.
+HOLOCUBE_PT_READY: original YOLO26n checkpoint loaded on device
+HOLOCUBE_PT_CAMERA_FRAME: 300 detection rows in 155 ms
+```
 
-- Current APK: `Builds/HoloCube.apk`
-- Size: 59,840,684 bytes
-- SHA-256: `1e0f16ca9102139af441afefa6916c619f9621327b1901885a51c86a5a492768`
-- Previous APK retained: `Builds/HoloCubeYOLO-before-YOLO26.apk`
-- Build/CPU parity log: `Builds/Build.log`
-- Graphics test log: `Builds/ValidateGPU.log`
+## Remaining checks
 
-Run `bash Tools/run-unity.sh Validate` for CPU/scene checks, or
-`bash Tools/run-unity.sh ValidateGPU` with a working Vulkan graphics environment
-for GPU checks. `Build` also runs the CPU/scene checks before producing an APK.
+Visual stereo-overlay alignment, repeated pause/resume cycles, sustained frame
+rate, memory use, and thermal behavior still need longer headset testing.
+The runtime uses older Python/PyTorch packages to enable direct `.pt` loading;
+desktop and initial headset success do not establish compatibility with every
+future Horizon OS version or arbitrary trained YOLO checkpoints.
 
-The model carries Ultralytics' included AGPL-3.0 license (or an applicable
-Ultralytics Enterprise license). The original Meta sample assets retain their
-licenses and the legacy weights remain in the sample folder.
+## Local artifacts
+
+Builds and logs are excluded from Git. Reproduce them using the Unity menu or
+`Tools/run-unity.sh` after running `Tools/setup-python.sh`.
+
+- APK: `Builds/HoloCube.apk`
+- Size: 110,003,196 bytes
+- SHA-256: `07a5d2e7e52f2894a4c4d45a2cd70198d1298da881324fc7397b72f7d52728d3`
+- Previous build: `Builds/HoloCube-before-PT.apk`
+- Build/CPU checks: `Builds/Build.log`
+- GPU preprocessing checks: `Builds/ValidateGPU.log`
+- GPU-readback fixture: `Builds/pt-preprocessed.rgba`
+
+Run `.build-tools/pt/bin/python Tools/validate-pt.py --rgba Builds/pt-preprocessed.rgba`
+after `bash Tools/run-unity.sh ValidateGPU` to repeat the GPU-to-PyTorch comparison.

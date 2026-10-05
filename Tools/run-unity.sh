@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export PYTHONDONTWRITEBYTECODE=1
 project_dir="$(cd "$(dirname "$0")/.." && pwd)"
 editor_path="${UNITY_EDITOR_PATH:-$HOME/Unity/Hub/Editor/6000.0.66f2/Editor/Unity}"
 method="${1:-Build}"

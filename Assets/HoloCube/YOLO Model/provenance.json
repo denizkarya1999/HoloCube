@@ -1,21 +1,17 @@
 {
   "model": "Ultralytics YOLO26n",
+  "format": "original PyTorch checkpoint, unchanged",
   "checkpoint_url": "https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n.pt",
   "checkpoint_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
-  "onnx_sha256": "6993f88bf1b17ab0d8155728f8d79a444835a30fb17f741f32c68b7db7a3dee5",
-  "ultralytics": "8.4.56",
-  "torch": "2.12.0+cu130",
-  "onnx": "1.21.0",
-  "export": {
-    "imgsz": 320,
-    "batch": 1,
-    "dynamic": false,
-    "simplify": false,
-    "opset": 15,
-    "end2end": true,
-    "nms": false,
-    "half": false
+  "export": null,
+  "runtime": {
+    "python": "3.8",
+    "torch": "1.8.1",
+    "numpy": "1.19.5",
+    "chaquopy": "16.1.0",
+    "device": "CPU"
   },
+  "module_methods": "Inference-only adaptation of Ultralytics 8.4.56 for this checkpoint",
   "input": [
     1,
     3,
@@ -35,5 +31,5 @@
     "confidence",
     "class_id"
   ],
-  "license": "AGPL-3.0; alternative commercial license from Ultralytics"
+  "license": "AGPL-3.0"
 }

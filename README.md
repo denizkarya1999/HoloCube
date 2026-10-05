@@ -3,12 +3,15 @@
 ![Device: Quest 3 / 3S](https://img.shields.io/badge/Device-Quest%203%20%2F%203S-0866FF)
 ![Unity 6000.0.66f2](https://img.shields.io/badge/Unity-6000.0.66f2-222222)
 ![Model: YOLO26 nano](https://img.shields.io/badge/Model-YOLO26%20nano-6E40C9)
+![Original PyTorch checkpoint](https://img.shields.io/badge/Model%20format-Original%20.pt-EF6C00)
 ![Runs on the headset](https://img.shields.io/badge/Inference-On%20device-238636)
 
 A standalone object detection app for **Meta Quest 3 / Quest 3S**.
 It sees the camera image, finds objects, and draws labelled boxes in your headset.
-The camera, model, and detection code all run on the Quest. A computer is only
-needed to build or install the app.
+The camera, model, and detection code all run on the Quest. The APK embeds
+Python, PyTorch, and the **original, unchanged `yolo26n.pt` checkpoint**. A computer
+is only needed to build or install the app. The HoloCube pipeline uses no model
+conversion, ONNX, TorchScript, server, or model download.
 
 ## Research inspiration
 
@@ -34,7 +37,7 @@ Read these three files in order:
 | --- | --- | --- |
 | **1. Main App** | `Assets/HoloCube/Main App/MainApp.cs` | Get a camera image, ask YOLO to process it, show the results. |
 | **2. YOLO Inference** | `Assets/HoloCube/YOLO Inference/YOLOInference.cs` | Resize the image, run the network, read and filter its results. |
-| **3. YOLO Model** | `Assets/HoloCube/YOLO Model/YOLOModel.cs` | Load the bundled weights and object names. |
+| **3. YOLO Model** | `Assets/HoloCube/YOLO Model/YOLOModel.cs` | Define the checkpoint, object names, and CPU settings. |
 
 The complete flow is:
 
@@ -47,8 +50,9 @@ Quest camera → MainApp → YOLOInference → list of Detection objects
 
 `MainApp.Update()` is the entry point for each display frame. It reads the
 buttons, checks camera access, captures a new image when ready, and advances the
-current detection. Inference runs a little at a time so Unity can keep drawing
-the headset view between steps.
+current detection. An Android background worker runs PyTorch while Unity keeps
+drawing the headset view. The GPU prepares the camera image; model inference runs
+on the headset CPU.
 
 ## Where things live
 
@@ -61,17 +65,22 @@ HoloCube/
 │   │   │   ├── MainApp.cs                 Camera → detection → display
 │   │   │   └── DetectionOverlay.cs        Boxes and labels in the headset
 │   │   ├── YOLO Inference/
-│   │   │   ├── YOLOInference.cs           Run the model on an image
+│   │   │   ├── YOLOInference.cs           Submit an image and read detections
+│   │   │   ├── ImagePreprocessor.cs       Copy a small camera image from the GPU
 │   │   │   ├── Detection.cs               One detection result
 │   │   │   ├── DetectionFilter.cs         Decode and filter YOLO26 output
 │   │   │   ├── ImageLetterbox.cs          Resize and map box coordinates
-│   │   │   └── Letterbox.shader           Prepare the camera image
+│   │   │   ├── Letterbox.shader           Resize with gray padding
+│   │   │   ├── Android/PyTorchWorker.java Background worker and Python bridge
+│   │   │   └── Python/
+│   │   │       ├── holocube_runtime.py    Pixels → PyTorch → detection rows
+│   │   │       └── checkpoint_runtime.py Load original .pt and run its layers
 │   │   ├── YOLO Model/
-│   │   │   ├── YOLOModel.cs               Load weights and class labels
+│   │   │   ├── YOLOModel.cs               Checkpoint constants and class labels
 │   │   │   ├── QuestYOLO.asset            Saved model settings
-│   │   │   ├── yolo26n.onnx               Bundled YOLO26 nano weights
+│   │   │   ├── yolo26n.pt                 Original YOLO26 nano checkpoint
 │   │   │   ├── coco.names.txt             80 labels in class-ID order
-│   │   │   ├── provenance.json           Source, export settings, hashes
+│   │   │   ├── provenance.json           Source, runtime versions, checksum
 │   │   │   └── LICENSE.txt               Ultralytics model license
 │   │   └── Editor/                       Scene setup, builds, validation
 │   └── PassthroughCameraApiSamples/      Meta rig and reference samples
@@ -81,7 +90,8 @@ HoloCube/
 ├── ProjectSettings/                      Unity and Android settings
 ├── Tools/
 │   ├── run-unity.sh                       Build or validate from a terminal
-│   ├── export-yolo26.py                   Reproduce the model export
+│   ├── setup-python.sh                    Prepare isolated build tools
+│   ├── validate-pt.py                     Test the unchanged .pt checkpoint
 │   └── Fixtures/YOLO26/                   PyTorch/Unity inference comparison
 ├── Docs/DEVELOPMENT.md                    Setup, model format, limitations
 ├── .github/labels.json                    GitHub issue-label definitions
@@ -110,7 +120,7 @@ Keep the supporting assets because the scene setup reuses Meta's configured rig.
 | Change label text or where boxes appear | `DetectionOverlay.cs`. |
 | Understand the results | `DetectionFilter.cs` reads YOLO26 output and removes weak results. |
 | Inspect the weights and object names | Select `YOLO Model/QuestYOLO.asset`. |
-| Train for different objects | Supply a trained model with the same input/output format; see the development notes. |
+| Train for different objects | Extend the checkpoint loader and validation; arbitrary .pt files are not interchangeable. |
 
 A **Detection** contains a class ID (an index into the names file), a confidence
 score from 0 to 1, and a rectangle in original camera-image pixels. **Inference** means running the trained
@@ -120,7 +130,9 @@ inside the 320 × 320 model input and fills the unused area with gray padding.
 
 ## Build, install, and use
 
-1. Clone this repository and open its folder in **Unity 6000.0.66f2** with Android Build Support installed.
+1. Clone this repository and run `bash Tools/setup-python.sh` on the development
+   computer. Then open it in **Unity 6000.0.66f2** with Android Build Support.
+   See the [development notes](Docs/DEVELOPMENT.md) for other host setups.
 2. Choose **HoloCube → Build standalone Quest APK**. This recreates the demo scene
    and writes `Builds/HoloCube.apk`; preserve custom scene edits before using it.
 3. Connect a Quest with developer mode enabled and sideload the APK.
@@ -131,13 +143,14 @@ You can disconnect the computer after installation. The weights and class names
 are included in the app; no server or model download is needed. Labels marked
 **~** use an estimated distance when scene depth is unavailable.
 
-For checks without an APK build, choose **HoloCube → Validate standalone pipeline**.
+For scene, coordinate, decoder, and real `.pt` checks without an APK build,
+choose **HoloCube → Validate standalone pipeline**.
 For command-line builds, run `bash Tools/run-unity.sh Build` from this folder.
 
 See [development notes](Docs/DEVELOPMENT.md) for SDK versions, model format,
 performance settings, and limitations; [validation results](VALIDATION.md) record
 what has actually been tested. The bundled model is **Ultralytics YOLO26 nano**,
-with 80 COCO classes, an end-to-end ONNX output, and 320 × 320 input. This sample detects objects; it does not track their
+with 80 COCO classes, an end-to-end `[1,300,6]` output, and 320 × 320 input. This sample detects objects; it does not track their
 identities across frames.
 
 ## Labels
@@ -189,4 +202,5 @@ Keep the supplied licenses when sharing or modifying the project.
 
 The YOLO26 model is distributed under [Ultralytics' AGPL-3.0 or Enterprise licensing](https://docs.ultralytics.com/models/yolo26/).
 Its license is included beside the weights. Meta's sample assets retain their
-original licenses. See the development notes for the exact export command.
+original licenses. The Python layer methods are adapted from Ultralytics under the same included
+license. See the development notes for the direct checkpoint runtime.

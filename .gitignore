@@ -29,3 +29,5 @@ __pycache__/
 .env.*
 *.keystore
 *.jks
+__pycache__.meta
+*.pyc.meta

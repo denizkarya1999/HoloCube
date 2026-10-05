@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.InferenceEngine;
 using UnityEngine;
 
 namespace HoloCube.QuestYOLO
@@ -10,22 +9,22 @@ namespace HoloCube.QuestYOLO
     {
         // Each row is [left, top, right, bottom, confidence, class ID].
         // The one-to-one model already selects objects: do not apply NMS again.
-        public static List<Detection> ReadYOLO26(Tensor<float> output, ImageLetterbox image,
+        public static List<Detection> ReadYOLO26(float[] output, ImageLetterbox image,
             int classCount, float minimumConfidence, int limit)
         {
-            if (output.shape.rank != 3 || output.shape[0] != 1 || output.shape[2] != 6)
+            if (output == null || output.Length != 300 * 6)
                 throw new InvalidOperationException("Expected YOLO26 end-to-end output [1, detections, 6].");
 
             var results = new List<Detection>();
             if (limit <= 0) return results;
-            for (int row = 0; row < output.shape[1]; row++)
+            for (int row = 0; row < output.Length / 6; row++)
             {
-                float confidence = output[0, row, 4];
-                float rawClass = output[0, row, 5];
+                float confidence = output[row * 6 + 4];
+                float rawClass = output[row * 6 + 5];
                 if (!Finite(confidence) || confidence < minimumConfidence || confidence > 1) continue;
                 if (!Finite(rawClass) || rawClass < 0 || rawClass >= classCount || rawClass != (int)rawClass) continue;
 
-                var box = new Vector4(output[0, row, 0], output[0, row, 1], output[0, row, 2], output[0, row, 3]);
+                var box = new Vector4(output[row * 6 + 0], output[row * 6 + 1], output[row * 6 + 2], output[row * 6 + 3]);
                 if (!Finite(box.x) || !Finite(box.y) || !Finite(box.z) || !Finite(box.w)) continue;
                 box = image.ToOriginalImage(box);
                 if (box.z <= box.x || box.w <= box.y) continue;

@@ -1,6 +1,6 @@
 # Agent Instructions — HoloCube
 
-A standalone Quest 3 / 3S app with an on-device YOLO26 pipeline. Start in `Assets/HoloCube/`: `Main App`, `YOLO Inference`, and `YOLO Model` are the three runtime parts. Meta's original camera samples remain as supporting assets and references; `QuestYOLO.unity` is the app's only build scene.
+A standalone Quest 3 / 3S app with an on-device YOLO26 pipeline that loads the original `.pt` checkpoint using embedded Python/PyTorch. Start in `Assets/HoloCube/`: `Main App`, `YOLO Inference`, and `YOLO Model` are the three runtime parts. Meta's original camera samples remain as supporting assets and references; `QuestYOLO.unity` is the app's only build scene.
 
 ## Source-of-truth files (read these first, do not duplicate their contents in this file)
 
@@ -8,7 +8,7 @@ For setup, build steps, SDK versions, and project layout, read:
 
 - `README.md` — app overview, research inspiration, file structure, labels, build steps
 - `ProjectSettings/ProjectVersion.txt` — Unity editor version
-- `Packages/manifest.json` — Unity package versions (MRUK, Unity Inference Engine)
+- `Packages/manifest.json` — Unity dependencies; `Assets/HoloCube/Editor/PyTorchAndroidBuild.cs` — Python runtime packaging
 - `Assets/HoloCube/` — app scene, runtime code, model, and editor validation tools
 - `Docs/DEVELOPMENT.md` and `VALIDATION.md` — model format, limitations, and checks actually performed
 - `UPSTREAM_README.md` — original Meta sample documentation

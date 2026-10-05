@@ -22,8 +22,6 @@ namespace HoloCube.QuestYOLO
         [Min(1)] public int MaxDetections = 24;
 
         [Header("Headset performance")]
-        [Tooltip("Model work per display frame. Lower values spread work over more frames.")]
-        [Min(1)] public int LayersPerFrame = 32;
         [Tooltip("Seconds to wait after a detection finishes before capturing again.")]
         [Min(0)] public float DetectionInterval = 0.1f;
         [Tooltip("Hide results older than this many seconds.")]
@@ -65,9 +63,14 @@ namespace HoloCube.QuestYOLO
             try
             {
                 ReadButtons();
+                if (!inference.IsReady)
+                {
+                    SetStatus("HoloCube · Loading .pt model…");
+                    return;
+                }
                 if (!CameraIsReady()) return;
 
-                // Only one image is processed at a time. Each update does a little work.
+                // One image at a time; the Android worker runs PyTorch in the background.
                 if (pendingDetection == null) CaptureImage();
                 ContinueDetection();
             }
@@ -113,7 +116,7 @@ namespace HoloCube.QuestYOLO
             var cameraPose = CameraAccess.GetCameraPose();
             float captureTime = Time.unscaledTime;
             pendingDetection = inference.Detect(
-                image, Confidence, LayersPerFrame, MaxDetections,
+                image, Confidence, MaxDetections,
                 detections => ShowDetections(detections, cameraPose, captureTime));
         }
 
@@ -122,7 +125,7 @@ namespace HoloCube.QuestYOLO
             if (pendingDetection == null) return;
 
             // The first step copies the image now, before the camera changes it.
-            // Later steps run model layers and wait for the GPU without blocking rendering.
+            // Later steps poll the background PyTorch worker without blocking rendering.
             if (pendingDetection.MoveNext()) return;
 
             CancelDetection();
@@ -174,7 +177,7 @@ namespace HoloCube.QuestYOLO
         {
             var pending = pendingDetection;
             pendingDetection = null;
-            // Disposing the iterator also releases its image and waits for pending GPU work.
+            // Disposing the iterator discards its result; native work can finish safely.
             (pending as IDisposable)?.Dispose();
         }
 
