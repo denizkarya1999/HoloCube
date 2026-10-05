@@ -276,12 +276,20 @@ namespace HoloCube.QuestYOLO
         private void RefreshStatus()
         {
             if (StatusLabel == null) return;
+            GameObject statusPanel = StatusLabel.transform.parent != null
+                ? StatusLabel.transform.parent.gameObject
+                : StatusLabel.gameObject;
+            bool showStatusPanel = menuPage != MenuPage.Home || showControllerHelp || failed;
+            if (statusPanel.activeSelf != showStatusPanel)
+                statusPanel.SetActive(showStatusPanel);
+            if (!showStatusPanel) return;
+
             string pageMessage = GetMenuPageMessage();
             string videoStatus = videoCapture != null ? videoCapture.StatusHint : string.Empty;
             string controls = showControllerHelp
-                ? ControllerMenu + "\nPress = to hide controls"
-                : "Press = to show controls";
-            StatusLabel.text = pageMessage + "\n" + controls +
+                ? "\n" + ControllerMenu + "\nPress = to hide controls"
+                : string.Empty;
+            StatusLabel.text = pageMessage + controls +
                 (string.IsNullOrEmpty(videoStatus) ? string.Empty : "\n" + videoStatus);
         }
 

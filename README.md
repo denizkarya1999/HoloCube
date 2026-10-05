@@ -137,7 +137,7 @@ inside the 320 × 320 model input and fills the unused area with gray padding.
    and writes `Builds/HoloCube.apk`; preserve custom scene edits before using it.
 3. Connect a Quest with developer mode enabled and sideload the APK.
 4. Open **HoloCube** in the headset and allow camera access.
-5. Press the left controller’s **= (Menu)** button to show or hide the controls. **A** toggles YOLO inference. Hold **B** for YOLO data collection; release **B** to stop recording. Press **X** to open About HoloCube and **Y** to view Settings. In Settings, use the left joystick up/down to select the confidence threshold or maximum number of boxes, then left/right to adjust the selected value. MP4s are saved in `Movies/HoloCube` on the headset.
+5. On startup, only detection boxes and labels with confidence percentages are shown. Press the left controller’s **= (Menu)** button to show or hide the controls. **A** toggles YOLO inference. Hold **B** for YOLO data collection; release **B** to stop recording. Press **X** to open About HoloCube and **Y** to view Settings. In Settings, use the left joystick up/down to select the confidence threshold or maximum number of boxes, then left/right to adjust the selected value. MP4s are saved in `Movies/HoloCube` on the headset.
 
 You can disconnect the computer after installation. The weights and class names
 are included in the app; no server or model download is needed. Labels marked
