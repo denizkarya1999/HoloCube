@@ -84,8 +84,14 @@ after `bash Tools/run-unity.sh ValidateGPU` to repeat the GPU-to-PyTorch compari
   guards. Log: `Builds/Build-final.log`.
 - Installed on the connected Quest 3S with app data preserved. Cold launch
   completed, the app was foreground, and the launch verifier found no crash.
-- The headset was not being worn during deployment. Holding/releasing B and
-  visually checking the recording badge, saved-file notice, and three-second
-  inference-off notice still require a headset interaction check.
+- After launch, four new B-button recordings completed on the Quest. Device
+  logs reported `HOLOCUBE_VIDEO_STARTED`, `HOLOCUBE_VIDEO_SAVING`, and
+  `HOLOCUBE_VIDEO_SAVED` for each, including the 34-frame
+  `Movies/HoloCube/HoloCube_20261005_182656_785.mp4`. All four files were present
+  in the headset's Movies/HoloCube folder.
+- Device model parity also passed, and live camera inference returned 300
+  detection rows. Log: `Builds/Quest-final.log`.
+- Visual confirmation of the recording badge, saved-file notice, and
+  three-second inference-off notice remains pending user feedback.
 - Final APK SHA-256:
   `4b12f0f8f26d9af11d023418022abb5e3d59acb2d0e45031b2102b486b910505`.
