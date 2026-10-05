@@ -143,6 +143,10 @@ Dialogs and recording messages use Michigan Maize text (`#FFCB05`) on Michigan B
 backgrounds (`#00274C`), following the [U-M color palette](https://brand.umich.edu/wp-content/uploads/2025/02/250027-U-M-Style-Guide-February2025.pdf).
 Maize borders and vector icons identify the guide, About, Settings, inference-off,
 saving, saved, and warning messages.
+Dialogs use larger 28-point text, and About features a maize cube-and-HoloCube
+wordmark above the project details.
+Rounded cards, soft shadows, maize accents, icon badges, and bold headings keep
+the dialog styling consistent throughout the app.
 
 You can disconnect the computer after installation. The weights and class names
 are included in the app; no server or model download is needed. Labels marked

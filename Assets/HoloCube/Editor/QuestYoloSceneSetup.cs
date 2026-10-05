@@ -33,6 +33,8 @@ namespace HoloCube.Editor
             var rig = Object.FindFirstObjectByType<OVRCameraRig>();
             app.StatusLabel = CreateStatus(rig.centerEyeAnchor, out var statusIcon);
             app.StatusIcon = statusIcon;
+            app.StatusIconContainer = statusIcon.transform.parent.gameObject;
+            app.AboutLogo = CreateAboutLogo(app.StatusLabel.transform.parent);
             app.RecordingIndicator = CreateRecordingIndicator(rig.centerEyeAnchor);
             app.RecordingFeedbackLabel = CreateRecordingFeedback(rig.centerEyeAnchor, out var feedbackIcon);
             app.RecordingFeedbackIcon = feedbackIcon;
@@ -137,10 +139,7 @@ namespace HoloCube.Editor
             canvas.overrideSorting = true;
             canvas.sortingOrder = 100;
             canvasObject.GetComponent<RectTransform>().sizeDelta = new Vector2(420, 120);
-            var background = canvasObject.AddComponent<Image>();
-            background.color = DialogBackgroundColor;
-            background.raycastTarget = false;
-            CreateDialogFrame(canvasObject.transform);
+            CreateDialogCard(canvasObject.transform, 18);
 
             var dotObject = new GameObject("Red Circle", typeof(RectTransform), typeof(RecordingDot));
             dotObject.transform.SetParent(canvasObject.transform, false);
@@ -158,7 +157,7 @@ namespace HoloCube.Editor
             label.rectTransform.sizeDelta = new Vector2(250, 55);
             label.rectTransform.anchoredPosition = new Vector2(45, 20);
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            label.fontSize = 32;
+            label.fontSize = 36;
             label.alignment = TextAnchor.MiddleLeft;
             label.color = DialogTextColor;
             label.raycastTarget = false;
@@ -170,7 +169,7 @@ namespace HoloCube.Editor
             destination.rectTransform.sizeDelta = new Vector2(390, 40);
             destination.rectTransform.anchoredPosition = new Vector2(0, -27);
             destination.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            destination.fontSize = 22;
+            destination.fontSize = 26;
             destination.alignment = TextAnchor.MiddleCenter;
             destination.color = DialogTextColor;
             destination.raycastTarget = false;
@@ -191,10 +190,7 @@ namespace HoloCube.Editor
             canvas.overrideSorting = true;
             canvas.sortingOrder = 100;
             canvasObject.GetComponent<RectTransform>().sizeDelta = new Vector2(1000, 120);
-            var background = canvasObject.AddComponent<Image>();
-            background.color = DialogBackgroundColor;
-            background.raycastTarget = false;
-            CreateDialogFrame(canvasObject.transform);
+            CreateDialogCard(canvasObject.transform, 24);
             icon = CreateDialogIcon(canvasObject.transform, DialogIcon.Kind.Saving);
             var labelObject = new GameObject("Save Status", typeof(RectTransform), typeof(Text));
             labelObject.transform.SetParent(canvasObject.transform, false);
@@ -204,7 +200,7 @@ namespace HoloCube.Editor
             label.rectTransform.offsetMin = new Vector2(104, 10);
             label.rectTransform.offsetMax = new Vector2(-24, -10);
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            label.fontSize = 24;
+            label.fontSize = 28;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = DialogTextColor;
             label.raycastTarget = false;
@@ -221,21 +217,19 @@ namespace HoloCube.Editor
             var canvas = canvasObject.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
             var rect = canvasObject.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(1120, 340);
-            var background = canvasObject.AddComponent<Image>();
-            background.color = DialogBackgroundColor;
-            background.raycastTarget = false;
-            CreateDialogFrame(canvasObject.transform);
+            rect.sizeDelta = new Vector2(1120, 400);
+            CreateDialogCard(canvasObject.transform, 24);
             icon = CreateDialogIcon(canvasObject.transform, DialogIcon.Kind.Cube);
             var textObject = new GameObject("Status", typeof(RectTransform), typeof(Text));
             textObject.transform.SetParent(canvasObject.transform, false);
             var text = textObject.GetComponent<Text>();
             text.rectTransform.anchorMin = Vector2.zero;
             text.rectTransform.anchorMax = Vector2.one;
-            text.rectTransform.offsetMin = new Vector2(104, 10);
-            text.rectTransform.offsetMax = new Vector2(-24, -10);
+            text.rectTransform.offsetMin = new Vector2(104, 20);
+            text.rectTransform.offsetMax = new Vector2(-24, -20);
             text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = 22;
+            text.fontSize = 28;
+            text.supportRichText = true;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = DialogTextColor;
             text.raycastTarget = false;
@@ -243,13 +237,81 @@ namespace HoloCube.Editor
             return text;
         }
 
+        private static GameObject CreateAboutLogo(Transform panel)
+        {
+            var logoObject = new GameObject("About HoloCube Logo", typeof(RectTransform));
+            logoObject.transform.SetParent(panel, false);
+            var logo = logoObject.GetComponent<RectTransform>();
+            logo.anchorMin = logo.anchorMax = new Vector2(0.5f, 1);
+            logo.anchoredPosition = new Vector2(0, -64);
+            logo.sizeDelta = new Vector2(440, 100);
+
+            var markObject = new GameObject("HoloCube Mark", typeof(RectTransform), typeof(DialogIcon));
+            markObject.transform.SetParent(logo, false);
+            var mark = markObject.GetComponent<DialogIcon>();
+            mark.rectTransform.anchorMin = mark.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            mark.rectTransform.anchoredPosition = new Vector2(-110, 0);
+            mark.rectTransform.sizeDelta = new Vector2(84, 84);
+            mark.color = DialogTextColor;
+            mark.raycastTarget = false;
+            mark.SetIcon(DialogIcon.Kind.Cube);
+
+            var titleObject = new GameObject("HoloCube Wordmark", typeof(RectTransform), typeof(Text));
+            titleObject.transform.SetParent(logo, false);
+            var title = titleObject.GetComponent<Text>();
+            title.rectTransform.anchorMin = title.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            title.rectTransform.anchoredPosition = new Vector2(86, 14);
+            title.rectTransform.sizeDelta = new Vector2(260, 54);
+            title.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            title.fontSize = 40;
+            title.fontStyle = FontStyle.Bold;
+            title.alignment = TextAnchor.MiddleLeft;
+            title.color = DialogTextColor;
+            title.raycastTarget = false;
+            title.text = "HoloCube";
+
+            var subtitleObject = new GameObject("Research Project", typeof(RectTransform), typeof(Text));
+            subtitleObject.transform.SetParent(logo, false);
+            var subtitle = subtitleObject.GetComponent<Text>();
+            subtitle.rectTransform.anchorMin = subtitle.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            subtitle.rectTransform.anchoredPosition = new Vector2(86, -23);
+            subtitle.rectTransform.sizeDelta = new Vector2(260, 34);
+            subtitle.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            subtitle.fontSize = 22;
+            subtitle.alignment = TextAnchor.MiddleLeft;
+            subtitle.color = DialogTextColor;
+            subtitle.raycastTarget = false;
+            subtitle.text = "Research Project";
+
+            var dividerObject = new GameObject("About Divider", typeof(RectTransform), typeof(Image));
+            dividerObject.transform.SetParent(logo, false);
+            var divider = dividerObject.GetComponent<Image>();
+            divider.rectTransform.anchorMin = divider.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            divider.rectTransform.anchoredPosition = new Vector2(0, -58);
+            divider.rectTransform.sizeDelta = new Vector2(900, 2);
+            divider.color = WithAlpha(DialogTextColor, 0.25f);
+            divider.raycastTarget = false;
+
+            logoObject.SetActive(false);
+            return logoObject;
+        }
+
         private static DialogIcon CreateDialogIcon(Transform panel, DialogIcon.Kind kind)
         {
-            var iconObject = new GameObject("Dialog Icon", typeof(RectTransform), typeof(DialogIcon));
-            iconObject.transform.SetParent(panel, false);
+            var groupObject = new GameObject("Dialog Icon", typeof(RectTransform));
+            groupObject.transform.SetParent(panel, false);
+            var group = groupObject.GetComponent<RectTransform>();
+            group.anchorMin = group.anchorMax = new Vector2(0, 0.5f);
+            group.anchoredPosition = new Vector2(54, 0);
+            group.sizeDelta = new Vector2(72, 72);
+            CreateCardLayer(group, "Icon Medallion", new Color32(9, 53, 94, 255), 20, 1,
+                WithAlpha(DialogTextColor, 0.22f), Vector2.zero, Vector2.zero);
+
+            var iconObject = new GameObject("Icon Glyph", typeof(RectTransform), typeof(DialogIcon));
+            iconObject.transform.SetParent(group, false);
             var icon = iconObject.GetComponent<DialogIcon>();
-            icon.rectTransform.anchorMin = icon.rectTransform.anchorMax = new Vector2(0, 0.5f);
-            icon.rectTransform.anchoredPosition = new Vector2(54, 0);
+            icon.rectTransform.anchorMin = icon.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            icon.rectTransform.anchoredPosition = Vector2.zero;
             icon.rectTransform.sizeDelta = new Vector2(48, 48);
             icon.color = DialogTextColor;
             icon.raycastTarget = false;
@@ -257,31 +319,43 @@ namespace HoloCube.Editor
             return icon;
         }
 
-        private static void CreateDialogFrame(Transform panel)
+        private static void CreateDialogCard(Transform panel, float radius)
         {
-            CreateFrameEdge(panel, "Frame Top", new Vector2(0, 1), Vector2.one,
-                new Vector2(-4, 2), new Vector2(0, -1));
-            CreateFrameEdge(panel, "Frame Bottom", Vector2.zero, new Vector2(1, 0),
-                new Vector2(-4, 2), new Vector2(0, 1));
-            CreateFrameEdge(panel, "Frame Left", Vector2.zero, new Vector2(0, 1),
-                new Vector2(2, 0), new Vector2(1, 0));
-            CreateFrameEdge(panel, "Frame Right", new Vector2(1, 0), Vector2.one,
-                new Vector2(2, 0), new Vector2(-1, 0));
+            // Child layers preserve rounded corners and keep the shadow behind the card.
+            CreateCardLayer(panel, "Card Shadow", new Color(0, 0, 0, 0.25f), radius + 3, 0,
+                Color.clear, new Vector2(0, -8), new Vector2(6, 6));
+            CreateCardLayer(panel, "Michigan Blue Card", DialogBackgroundColor, radius, 2,
+                WithAlpha(DialogTextColor, 0.5f), Vector2.zero, Vector2.zero);
+
+            var accentObject = new GameObject("Maize Accent", typeof(RectTransform), typeof(Image));
+            accentObject.transform.SetParent(panel, false);
+            var accent = accentObject.GetComponent<Image>();
+            accent.rectTransform.anchorMin = accent.rectTransform.anchorMax = new Vector2(0.5f, 1);
+            accent.rectTransform.anchoredPosition = new Vector2(0, -2);
+            accent.rectTransform.sizeDelta = new Vector2(140, 2);
+            accent.color = WithAlpha(DialogTextColor, 0.9f);
+            accent.raycastTarget = false;
         }
 
-        private static void CreateFrameEdge(Transform panel, string name, Vector2 anchorMin,
-            Vector2 anchorMax, Vector2 size, Vector2 position)
+        private static void CreateCardLayer(Transform panel, string name, Color fill, float radius,
+            float borderWidth, Color borderColor, Vector2 position, Vector2 size)
         {
-            var edgeObject = new GameObject(name, typeof(RectTransform), typeof(Image));
-            edgeObject.transform.SetParent(panel, false);
-            var edge = edgeObject.GetComponent<Image>();
-            edge.rectTransform.anchorMin = anchorMin;
-            edge.rectTransform.anchorMax = anchorMax;
-            edge.rectTransform.sizeDelta = size;
-            edge.rectTransform.anchoredPosition = position;
-            edge.color = new Color(DialogTextColor.r, DialogTextColor.g, DialogTextColor.b, 0.6f);
-            edge.raycastTarget = false;
+            var layerObject = new GameObject(name, typeof(RectTransform), typeof(DialogPanel));
+            layerObject.transform.SetParent(panel, false);
+            var layer = layerObject.GetComponent<DialogPanel>();
+            layer.rectTransform.anchorMin = Vector2.zero;
+            layer.rectTransform.anchorMax = Vector2.one;
+            layer.rectTransform.sizeDelta = size;
+            layer.rectTransform.anchoredPosition = position;
+            layer.color = fill;
+            layer.CornerRadius = radius;
+            layer.BorderWidth = borderWidth;
+            layer.BorderColor = borderColor;
+            layer.raycastTarget = false;
         }
+
+        private static Color WithAlpha(Color color, float alpha) =>
+            new Color(color.r, color.g, color.b, alpha);
 
     }
 }

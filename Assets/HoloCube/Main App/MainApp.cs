@@ -27,6 +27,8 @@ namespace HoloCube.QuestYOLO
         public DetectionOverlay Overlay;
         public Text StatusLabel;
         public DialogIcon StatusIcon;
+        public GameObject StatusIconContainer;
+        public GameObject AboutLogo;
         public GameObject RecordingIndicator;
         public Text RecordingFeedbackLabel;
         public DialogIcon RecordingFeedbackIcon;
@@ -332,15 +334,30 @@ namespace HoloCube.QuestYOLO
                 statusPanel.SetActive(showStatusPanel);
             if (!showStatusPanel) return;
 
+            bool showAbout = menuPage == MenuPage.About && !showControllerHelp && !failed;
+            if (AboutLogo != null && AboutLogo.activeSelf != showAbout)
+                AboutLogo.SetActive(showAbout);
+            GameObject statusIconObject = StatusIconContainer != null
+                ? StatusIconContainer : StatusIcon != null ? StatusIcon.gameObject : null;
+            if (statusIconObject != null && statusIconObject.activeSelf == showAbout)
+                statusIconObject.SetActive(!showAbout);
+            Vector2 textInsetMin = showAbout ? new Vector2(24, 24) : new Vector2(104, 20);
+            Vector2 textInsetMax = showAbout ? new Vector2(-24, -132) : new Vector2(-24, -20);
+            if (StatusLabel.rectTransform.offsetMin != textInsetMin)
+                StatusLabel.rectTransform.offsetMin = textInsetMin;
+            if (StatusLabel.rectTransform.offsetMax != textInsetMax)
+                StatusLabel.rectTransform.offsetMax = textInsetMax;
+
             StatusIcon?.SetIcon(failed ? DialogIcon.Kind.Warning :
                 showControllerHelp ? DialogIcon.Kind.Controls :
                 showInferenceOffStatus ? DialogIcon.Kind.InferenceOff :
                 menuPage == MenuPage.Settings ? DialogIcon.Kind.Settings : DialogIcon.Kind.Cube);
 
             if (showControllerHelp && !failed)
-                StatusLabel.text = ControllerMenu + "\nPress the Menu button to hide controls";
+                StatusLabel.text = "<size=32><b>Controller Guide</b></size>\n" +
+                    ControllerMenu + "\nPress the Menu button to hide controls";
             else if (showInferenceOffStatus)
-                StatusLabel.text = "Inference Mode: Off";
+                StatusLabel.text = "<b>Inference Mode: Off</b>";
             else
                 StatusLabel.text = GetMenuPageMessage();
         }
@@ -350,15 +367,14 @@ namespace HoloCube.QuestYOLO
             switch (menuPage)
             {
                 case MenuPage.About:
-                    return "About HoloCube\n" +
-                        "Name: HoloCube Research Project\n" +
+                    return "Name: HoloCube Research Project\n" +
                         "Version: 1.0\n" +
                         "Release Date: TBD\n" +
                         "Developers: Deniz K. Acikbas and Ahmad Jayeb\n" +
                         "Advisor: Xiao Zhang\n" +
                         "Institution: University of Michigan-Dearborn";
                 case MenuPage.Settings:
-                    return $"Settings\n" +
+                    return $"<size=32><b>Settings</b></size>\n" +
                         $"{(selectedSettingIndex == 0 ? ">" : " ")} Confidence threshold: {Confidence:0.00}\n" +
                         $"{(selectedSettingIndex == 1 ? ">" : " ")} Maximum number of boxes: {MaxDetections}\n" +
                         "Joystick up/down: select · left/right: adjust";
