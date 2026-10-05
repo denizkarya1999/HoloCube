@@ -302,14 +302,20 @@ namespace HoloCube.QuestYOLO
             GameObject statusPanel = StatusLabel.transform.parent != null
                 ? StatusLabel.transform.parent.gameObject
                 : StatusLabel.gameObject;
-            bool showStatusPanel = menuPage != MenuPage.Home || showControllerHelp || failed;
+            bool showInferenceOffStatus =
+                menuPage == MenuPage.Home && userPaused && !showControllerHelp && !failed;
+            bool showStatusPanel = menuPage != MenuPage.Home ||
+                showControllerHelp || showInferenceOffStatus || failed;
             if (statusPanel.activeSelf != showStatusPanel)
                 statusPanel.SetActive(showStatusPanel);
             if (!showStatusPanel) return;
 
-            StatusLabel.text = showControllerHelp && !failed
-                ? ControllerMenu + "\nPress = to hide controls"
-                : GetMenuPageMessage();
+            if (showControllerHelp && !failed)
+                StatusLabel.text = ControllerMenu + "\nPress = to hide controls";
+            else if (showInferenceOffStatus)
+                StatusLabel.text = "Inference Mode: Off";
+            else
+                StatusLabel.text = GetMenuPageMessage();
         }
 
         private string GetMenuPageMessage()
@@ -320,6 +326,7 @@ namespace HoloCube.QuestYOLO
                     return "About HoloCube\n" +
                         "Name: HoloCube Research Project\n" +
                         "Version: 1.0\n" +
+                        "Release Date: TBD\n" +
                         "Developers: Deniz K. Acikbas and Ahmad Jayeb\n" +
                         "Advisor: Xiao Zhang\n" +
                         "Institution: University of Michigan-Dearborn";
