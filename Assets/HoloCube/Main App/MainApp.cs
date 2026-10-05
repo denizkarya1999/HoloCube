@@ -49,6 +49,7 @@ namespace HoloCube.QuestYOLO
         private bool failed;
         private bool bButtonHeld;
         private bool recordingAttemptedForCurrentHold;
+        private bool showControllerHelp;
         private MenuPage menuPage;
         private int selectedSettingIndex;
         private float nextSettingsJoystickActionTime;
@@ -128,6 +129,9 @@ namespace HoloCube.QuestYOLO
 
         private void ReadButtons()
         {
+            if (OVRInput.GetDown(OVRInput.Button.Start, OVRInput.Controller.LTouch))
+                showControllerHelp = !showControllerHelp;
+
             if (OVRInput.GetDown(OVRInput.Button.One, OVRInput.Controller.RTouch))
                 userPaused = !userPaused;
 
@@ -274,9 +278,11 @@ namespace HoloCube.QuestYOLO
             if (StatusLabel == null) return;
             string pageMessage = GetMenuPageMessage();
             string videoStatus = videoCapture != null ? videoCapture.StatusHint : string.Empty;
-            StatusLabel.text = string.IsNullOrEmpty(videoStatus)
-                ? pageMessage + "\n" + ControllerMenu
-                : pageMessage + "\n" + ControllerMenu + "\n" + videoStatus;
+            string controls = showControllerHelp
+                ? ControllerMenu + "\nPress = to hide controls"
+                : "Press = to show controls";
+            StatusLabel.text = pageMessage + "\n" + controls +
+                (string.IsNullOrEmpty(videoStatus) ? string.Empty : "\n" + videoStatus);
         }
 
         private string GetMenuPageMessage()
