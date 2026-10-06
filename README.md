@@ -191,6 +191,10 @@ screenshots; each image contains the left-eye and right-eye views.
 
 ![HoloCube detection bounding boxes on Quest](Docs/Screenshots/bounding-boxes-quest.png)
 
+**Recording:** red recording indicator and the video save location while holding B.
+
+![HoloCube recording indicator on Quest](Docs/Screenshots/recording-quest.png)
+
 **Controller Guide:** button mappings shown with the left controller's Menu button.
 
 ![HoloCube Controller Guide on Quest](Docs/Screenshots/guide-quest.png)
