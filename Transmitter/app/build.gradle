@@ -24,6 +24,8 @@ android {
         warningsAsErrors true
         // Keep the verified toolchain pinned; available upgrades are not app defects.
         disable 'AndroidGradlePluginVersion', 'GradleDependency'
+        // API 36 is the intentional target supported by this pinned AGP toolchain.
+        disable 'OldTargetApi'
     }
 }
 
