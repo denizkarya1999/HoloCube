@@ -13,6 +13,13 @@ Python, PyTorch, and the **original, unchanged `yolo26n.pt` checkpoint**. A comp
 is only needed to build or install the app. The HoloCube pipeline uses no model
 conversion, ONNX, TorchScript, server, or model download.
 
+## Android phone transmitter
+
+[**HoloCube Transmitter**](Transmitter/) is a separate, lightweight Android app
+that displays the supplied optical pattern full screen and keeps the phone awake.
+Tap the image to reveal **About Us**, with the same research team details as the
+VR app. See its [build and installation guide](Transmitter/README.md).
+
 ## Research inspiration
 
 Inspired by **Dr. Xiao Zhang, Li Xiao, and Matt W. Mutka**, *HoloCube: 3D Optical
