@@ -20,7 +20,16 @@ Verified October 19, 2026.
   as fully tested. The device results above are from the physical Motorola.
 
 Development APK: `app/build/outputs/apk/debug/app-debug.apk` (sideloadable, debug signed).
-SHA-256: `54b1958efa836842fdc9ca623fdd96bb1e4b1bb90993a2e9519ba10550e451ed`.
+SHA-256: `78ab6cb2e5e1fb67032d97563db17aa0e8b68ebca6cae46a6e3b44b67f89e2d1`.
 
 The app supports API 23 and later; other Android versions and physical phones
 have not been device-tested. No Google Play publication is included.
+
+## Maximum brightness update — October 19, 2026
+
+- Rebuilt and passed Android lint, then updated the Motorola installation.
+- Android reported `screenBrightnessOverride=1.0` and brightness reason `override`
+  on both the image and About Us screens, including after returning to the app.
+- On Home, the override cleared and the brightness reason returned to `automatic`.
+- The phone's saved brightness (125) and adaptive-brightness mode (1) stayed
+  unchanged throughout. The app was left open on the image at full brightness.

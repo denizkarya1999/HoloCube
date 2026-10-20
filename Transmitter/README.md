@@ -23,7 +23,10 @@ the image still fits within the available window.
 
 The app prevents automatic screen timeout while visible, including on About Us.
 Home, switching to another app, and the power button keep their normal behavior.
-The app uses the phone's chosen brightness and needs no runtime permissions,
+The app requests maximum screen brightness on both the image and About Us screens.
+Your normal brightness policy resumes when you leave the app. This window-only
+override does not change the phone's saved brightness or adaptive-brightness setting.
+It needs no runtime permissions,
 internet access, camera, microphone, storage access, or background service.
 It displays a static optical pattern; it does not encode or send changing data.
 

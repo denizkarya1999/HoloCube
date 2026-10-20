@@ -17,13 +17,16 @@ public abstract class FullscreenActivity extends Activity {
         super.onCreate(savedInstanceState);
         // A visible-window flag needs no wake-lock permission and stops applying in background.
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        WindowManager.LayoutParams attributes = getWindow().getAttributes();
+        // Request full brightness only for this app's foreground window.
+        // Android restores the user's normal policy when another window takes over.
+        attributes.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            WindowManager.LayoutParams attributes = getWindow().getAttributes();
             attributes.layoutInDisplayCutoutMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
                     ? WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
                     : WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
-            getWindow().setAttributes(attributes);
         }
+        getWindow().setAttributes(attributes);
     }
 
     @Override
