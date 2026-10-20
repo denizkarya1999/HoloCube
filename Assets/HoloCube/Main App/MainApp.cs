@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace HoloCube.QuestYOLO
 {
-    /// <summary>Start here: camera image → YOLO detections → boxes in the headset.</summary>
+    /// <summary>Start here: camera image → transmitter detections → boxes in the headset.</summary>
     public sealed class MainApp : MonoBehaviour
     {
         private enum MenuPage
@@ -18,12 +18,12 @@ namespace HoloCube.QuestYOLO
         }
 
         private const string ControllerMenu =
-            "Press A: YOLO Inference · Hold B: YOLO Data Collection\n" +
+            "Press A: Transmitter Recognition · Hold B: Record Training Video\n" +
             "Press X: About HoloCube · Press Y: Settings";
 
         [Header("Scene connections")]
         public PassthroughCameraAccess CameraAccess;
-        public YOLOModel Model;
+        public TransmitterRecognitionModel Model;
         public DetectionOverlay Overlay;
         public Text StatusLabel;
         public DialogIcon StatusIcon;
@@ -45,7 +45,7 @@ namespace HoloCube.QuestYOLO
         [Tooltip("Hide results older than this many seconds.")]
         [Min(0.1f)] public float MaxResultAge = 0.75f;
 
-        private YOLOInference inference;
+        private TransmitterInference inference;
         private CameraVideoCapture videoCapture;
         private IEnumerator pendingDetection;
         private DateTime lastCameraTimestamp;
@@ -84,7 +84,7 @@ namespace HoloCube.QuestYOLO
                 if (CameraAccess == null || Model == null || Overlay == null)
                     throw new InvalidOperationException("Assign the camera, model, and overlay in the scene.");
 
-                inference = new YOLOInference(Model);
+                inference = new TransmitterInference(Model);
                 RequestPermissions();
                 SetStatus("Waiting for camera permission…\nAllow camera access to begin");
             }
@@ -129,7 +129,7 @@ namespace HoloCube.QuestYOLO
                 {
                     CancelDetection();
                     Overlay.Clear();
-                    SetStatus("YOLO inference paused");
+                    SetStatus("Transmitter recognition paused");
                     return;
                 }
 
@@ -302,7 +302,7 @@ namespace HoloCube.QuestYOLO
             else
                 Overlay.Clear();
 
-            SetStatus($"HoloCube · {detections.Count} objects · {age * 1000:0} ms · ~ means approximate depth");
+            SetStatus($"HoloCube · {detections.Count} transmitters · {age * 1000:0} ms · ~ means approximate depth");
         }
 
         private void RequestPermissions()

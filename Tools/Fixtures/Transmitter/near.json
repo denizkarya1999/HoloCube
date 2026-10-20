@@ -1,0 +1,22 @@
+{
+  "checkpoint_sha256": "8c6e981c7a49ff52c7113cf9cd95763ae6495e3baab3e3d68c17a6919e3d8fef",
+  "source_image": "holocube_000080.png",
+  "source_sha256": "6bf443af80e26f82f4eca00000242a6abb761b43dd3ba1282c0d25164856d295",
+  "width": 640,
+  "height": 480,
+  "input_size": 320,
+  "threshold": 0.35,
+  "oracle": "Ultralytics 8.4.56 / PyTorch 2.12.0+cu130, original unfused detection model",
+  "detections": [
+    {
+      "classId": 0,
+      "confidence": 0.8863989114761353,
+      "box": [
+        135.0828094482422,
+        111.31047058105469,
+        186.5782928466797,
+        153.39959716796875
+      ]
+    }
+  ]
+}

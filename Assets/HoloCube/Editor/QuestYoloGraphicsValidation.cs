@@ -16,14 +16,14 @@ namespace HoloCube.Editor
         public static void Run()
         {
             Require(SystemInfo.supportsComputeShaders, "Compute shaders are required for this check.");
-            var definition = AssetDatabase.LoadAssetAtPath<YOLOModel>(QuestYoloSceneSetup.ModelPath);
+            var definition = AssetDatabase.LoadAssetAtPath<TransmitterRecognitionModel>(QuestYoloSceneSetup.ModelPath);
             CheckLetterboxShader(definition, false);
             CheckLetterboxShader(definition, true);
             SaveReferencePixels(definition);
             Debug.Log("HOLOCUBE_PREPROCESSING_PASSED: padding, orientation and sRGB handling on " + SystemInfo.graphicsDeviceName);
         }
 
-        private static void CheckLetterboxShader(YOLOModel definition, bool srgb)
+        private static void CheckLetterboxShader(TransmitterRecognitionModel definition, bool srgb)
         {
             var image = new Texture2D(4, 2, TextureFormat.RGBA32, false, !srgb);
             try
@@ -50,9 +50,9 @@ namespace HoloCube.Editor
             finally { Object.DestroyImmediate(image); }
         }
 
-        private static void SaveReferencePixels(YOLOModel definition)
+        private static void SaveReferencePixels(TransmitterRecognitionModel definition)
         {
-            byte[] bytes = File.ReadAllBytes("Tools/Fixtures/YOLO26/input.f32");
+            byte[] bytes = File.ReadAllBytes("Tools/Fixtures/Transmitter/input.f32");
             var values = new float[bytes.Length / sizeof(float)];
             Buffer.BlockCopy(bytes, 0, values, 0, bytes.Length);
             var pixels = new Color[320 * 320];

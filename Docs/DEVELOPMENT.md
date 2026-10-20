@@ -1,7 +1,8 @@
 # Build and development notes
 
-HoloCube loads the original `yolo26n.pt` with Python `torch.load` on the Quest.
-Its SHA-256 is checked before loading. There is no model export or conversion.
+HoloCube loads the trained `holocube_transmitter.pt` with Python `torch.load` on the Quest.
+Its SHA-256 is checked before loading. The supplied native `.pt` is embedded unchanged; deployment performs no further
+model export or conversion.
 `checkpoint_runtime.py` supplies inference-only module methods adapted from
 Ultralytics 8.4.56; the checkpoint's saved module structure and weights are restored
 directly. Training and export dependencies are not included in the app.
@@ -15,13 +16,13 @@ directly. Training and export dependencies are not included in the app.
 | Embedded PyTorch | 1.8.1, CPU |
 | Embedded NumPy | 1.19.5 |
 | Chaquopy Android packaging | 16.1.0 |
-| Model | Original Ultralytics YOLO26n `.pt` checkpoint |
+| Model | Trained single-class YOLO26n transmitter `.pt` checkpoint |
 | Android | ARM64, IL2CPP, Vulkan; minimum API 32, target API 35 |
 
 PyTorch 1.8.1 is available as a Python package for Android ARM64 through Chaquopy.
-This older runtime is used specifically for direct checkpoint loading. A desktop
-parity test verifies its results. The connected Quest also passed the reference
-check and processed a live camera frame; sustained performance needs further testing. Unity Inference Engine remains a dependency of Meta's reference
+This older runtime is used specifically for direct checkpoint loading. A desktop parity test compares three transmitter frames with the independent
+Ultralytics implementation. See `VALIDATION.md` for device checks on each release;
+recorded checks from earlier releases do not establish this model’s performance. Unity Inference Engine remains a dependency of Meta's reference
 samples, but the HoloCube pipeline does not use it.
 
 ## Build
@@ -38,10 +39,13 @@ scene edits before running it. To build a manually edited scene, use Unity's
 Android Build UI with only `QuestYOLO.unity` enabled.
 
 `PyTorchAndroidBuild.cs` adds Chaquopy to the generated Android project and embeds
-the Python source, Java worker, original checkpoint, and Python dependencies.
+the Python source, Java worker, trained transmitter checkpoint, and Python dependencies.
 Dependency downloads happen on the build computer. The installed app works offline.
 A small reference-image tensor is bundled for a one-time startup inference check;
 its known detections must match before the model accepts camera frames.
+Incremental builds remove the former `yolo26n.pt` from generated Python sources.
+The final APK/AAB guard checks that exactly one `.pt` is packaged and verifies its
+SHA-256 against the supplied transmitter weights, preventing stale generic models.
 
 Set `UNITY_EDITOR_PATH` if Unity is installed elsewhere. `HOLOCUBE_PYTHON` can point
 to another Python 3.8 environment containing PyTorch 1.8.1 and NumPy 1.19.5; use it
@@ -60,7 +64,7 @@ the editor-only Linux simulator-installer fix from the initial implementation.
 3. `PyTorchWorker` runs Python on one Android background worker. PyTorch uses two
    CPU threads by default; **Cpu Threads** on the model asset changes this.
 4. `holocube_runtime.py` flips Unity's bottom-first pixels to top-first RGB,
-   normalizes them to 0–1, and runs the original checkpoint.
+   normalizes them to 0–1, and runs the transmitter checkpoint.
 5. `DetectionFilter` reads `[x1,y1,x2,y2,confidence,class_id]` rows, removes padding,
    and maps boxes to original camera pixels. `DetectionOverlay` places AR labels.
 
@@ -75,11 +79,13 @@ such labels show **~**. Boxes do not provide persistent object identity or metri
 
 ## Checkpoints
 
-The source URL, hash, and runtime versions are recorded in
-`Assets/HoloCube/YOLO Model/provenance.json`. The original file is committed beside
+The supplied file’s provenance, hash, and runtime versions are recorded in
+`Assets/HoloCube/Transmitter Model/provenance.json`. The supplied file is committed unchanged beside
 the model settings. Do not rename an exported model to `.pt`.
 
-The loader supports this bundled YOLO26n checkpoint. For custom trained weights or
+The loader supports only the bundled transmitter checkpoint and checks that its
+class mapping is exactly `0: Transmitter`. The general COCO checkpoint is no longer
+packaged in the app. For custom trained weights or
 another YOLO architecture, update the allowed checkpoint hash, supported layer
 methods, class names, and real-image validation together. This sample does not
 provide a general-purpose arbitrary-checkpoint loader.
@@ -87,11 +93,11 @@ provide a general-purpose arbitrary-checkpoint loader.
 ## Validation
 
 - `bash Tools/run-unity.sh Validate`: scene wiring, coordinates, decoder, and
-  actual direct-checkpoint inference against the PyTorch reference fixture.
+  actual direct-checkpoint inference against three transmitter reference fixtures.
 - `bash Tools/run-unity.sh ValidateGPU`: real GPU preprocessing checks for
   padding, orientation, and sRGB. Saves `Builds/pt-preprocessed.rgba`.
 - `.build-tools/pt/bin/python Tools/validate-pt.py --rgba Builds/pt-preprocessed.rgba`:
-  run the original checkpoint on those actual Unity pixels.
+  run the trained transmitter checkpoint on those actual Unity pixels.
 
 The full Python/Java bridge runs on Android. The Unity editor does not run that
 bridge; use a Quest to verify startup, live camera detection, and latency.

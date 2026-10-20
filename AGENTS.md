@@ -1,6 +1,6 @@
 # Agent Instructions — HoloCube
 
-A standalone Quest 3 / 3S app with an on-device YOLO26 pipeline that loads the original `.pt` checkpoint using embedded Python/PyTorch. Start in `Assets/HoloCube/`: `Main App`, `YOLO Inference`, and `YOLO Model` are the three runtime parts. Meta's original camera samples remain as supporting assets and references; `QuestYOLO.unity` is the app's only build scene.
+A standalone Quest 3 / 3S app with an on-device Transmitter Recognition Model (a single-class trained YOLO26n detector) that loads the supplied `holocube_transmitter.pt` checkpoint using embedded Python/PyTorch. Start in `Assets/HoloCube/`: `Main App`, `Transmitter Inference`, and `Transmitter Model` are the three runtime parts. Meta's original camera samples remain as supporting assets and references; `QuestYOLO.unity` is the app's only build scene.
 
 ## Source-of-truth files (read these first, do not duplicate their contents in this file)
 
@@ -19,7 +19,7 @@ For setup, build steps, SDK versions, and project layout, read:
 - Requires **Quest 3 / 3S** — older Quest hardware does not expose passthrough camera frames.
 - App needs the `horizonos.permission.HEADSET_CAMERA` permission and passthrough enabled in the project; do not strip these from the manifest.
 - **XR Simulator does not support the Passthrough Camera API.** Test on a physical device or via Meta Horizon Link 2.1+; agents that try to verify in-editor will silently get nothing.
-- The active YOLO26 model carries the included Ultralytics AGPL-3.0 license. The legacy upstream YOLO model has a separate MIT notice; keep both licenses with their respective files.
+- The active transmitter model (YOLO26 architecture) carries the included Ultralytics AGPL-3.0 license. The legacy upstream YOLO model has a separate MIT notice; keep both licenses with their respective files.
 - Model and SDK assets are stored directly in Git; this repository does not currently use Git LFS.
 
 # Meta Quest tooling

@@ -1,0 +1,3 @@
+# Model weights and reference tensors must retain their exact bytes on every OS.
+*.pt binary
+*.f32 binary

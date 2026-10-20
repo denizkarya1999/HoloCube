@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using HoloCube.QuestYOLO;
 using UnityEditor.Android;
 
 namespace HoloCube.Editor
@@ -35,17 +36,22 @@ namespace HoloCube.Editor
 
             string pythonDir = Path.Combine(libraryPath, "src/main/python");
             Directory.CreateDirectory(pythonDir);
-            foreach (string file in Directory.GetFiles("Assets/HoloCube/YOLO Inference/Python", "*.py"))
+            // Unity can reuse a generated Gradle project from the general detector.
+            // Remove its old weights so incremental builds ship only our trained model.
+            string legacyCheckpoint = Path.Combine(pythonDir, "yolo26n.pt");
+            if (File.Exists(legacyCheckpoint)) File.Delete(legacyCheckpoint);
+            foreach (string file in Directory.GetFiles("Assets/HoloCube/Transmitter Inference/Python", "*.py"))
                 File.Copy(file, Path.Combine(pythonDir, Path.GetFileName(file)), true);
-            File.Copy(QuestYoloSceneSetup.ModelFolder + "yolo26n.pt", Path.Combine(pythonDir, "yolo26n.pt"), true);
+            File.Copy(QuestYoloSceneSetup.ModelFolder + TransmitterRecognitionModel.CheckpointFile,
+                Path.Combine(pythonDir, TransmitterRecognitionModel.CheckpointFile), true);
             File.Copy(QuestYoloSceneSetup.ModelFolder + "LICENSE.txt", Path.Combine(pythonDir, "YOLO-LICENSE.txt"), true);
 
-            File.Copy("Tools/Fixtures/YOLO26/input.f32", Path.Combine(pythonDir, "reference.f32"), true);
-            File.Copy("Tools/Fixtures/YOLO26/expected.json", Path.Combine(pythonDir, "reference.json"), true);
+            File.Copy("Tools/Fixtures/Transmitter/input.f32", Path.Combine(pythonDir, "reference.f32"), true);
+            File.Copy("Tools/Fixtures/Transmitter/expected.json", Path.Combine(pythonDir, "reference.json"), true);
 
             string javaDir = Path.Combine(libraryPath, "src/main/java/com/holocube/pytorch");
             Directory.CreateDirectory(javaDir);
-            File.Copy("Assets/HoloCube/YOLO Inference/Android/PyTorchWorker.java", Path.Combine(javaDir, "PyTorchWorker.java"), true);
+            File.Copy("Assets/HoloCube/Transmitter Inference/Android/PyTorchWorker.java", Path.Combine(javaDir, "PyTorchWorker.java"), true);
         }
     }
 }

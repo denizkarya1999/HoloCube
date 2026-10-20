@@ -3,12 +3,12 @@ using UnityEngine;
 
 namespace HoloCube.QuestYOLO
 {
-    /// <summary>The original checkpoint, object names, and CPU settings.</summary>
-    [CreateAssetMenu(menuName = "HoloCube/YOLO Model")]
-    public sealed class YOLOModel : ScriptableObject
+    /// <summary>The trained transmitter checkpoint, label, and CPU settings.</summary>
+    [CreateAssetMenu(menuName = "HoloCube/Transmitter Recognition Model")]
+    public sealed class TransmitterRecognitionModel : ScriptableObject
     {
-        public const string CheckpointFile = "yolo26n.pt";
-        public const string CheckpointHash = "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef";
+        public const string CheckpointFile = "holocube_transmitter.pt";
+        public const string CheckpointHash = "8c6e981c7a49ff52c7113cf9cd95763ae6495e3baab3e3d68c17a6919e3d8fef";
         public const int InputSize = 320;
 
         [Tooltip("One object name per line, in class-ID order.")]
@@ -23,6 +23,8 @@ namespace HoloCube.QuestYOLO
             if (Labels == null) throw new InvalidOperationException("Assign the class names file.");
             var names = Labels.text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < names.Length; i++) names[i] = names[i].Trim();
+            if (names.Length != 1 || names[0] != "Transmitter")
+                throw new InvalidOperationException("The Transmitter Recognition Model requires class 0: Transmitter.");
             return names;
         }
     }

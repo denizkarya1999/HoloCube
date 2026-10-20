@@ -15,8 +15,8 @@ namespace HoloCube.Editor
     public static class QuestYoloSceneSetup
     {
         public const string ScenePath = "Assets/HoloCube/QuestYOLO.unity";
-        public const string ModelFolder = "Assets/HoloCube/YOLO Model/";
-        public const string ModelPath = ModelFolder + "QuestYOLO.asset";
+        public const string ModelFolder = "Assets/HoloCube/Transmitter Model/";
+        public const string ModelPath = ModelFolder + "TransmitterRecognition.asset";
         private const string SampleScene = "Assets/PassthroughCameraApiSamples/MultiObjectDetection/MultiObjectDetection.unity";
         private static readonly Color DialogTextColor = new Color32(255, 203, 5, 255);
         private static readonly Color DialogBackgroundColor = new Color32(0, 39, 76, 255);
@@ -80,17 +80,17 @@ namespace HoloCube.Editor
                 Object.DestroyImmediate(component);
         }
 
-        private static YOLOModel ConfigureModel()
+        private static TransmitterRecognitionModel ConfigureModel()
         {
-            var model = AssetDatabase.LoadAssetAtPath<YOLOModel>(ModelPath);
+            var model = AssetDatabase.LoadAssetAtPath<TransmitterRecognitionModel>(ModelPath);
             if (model == null)
             {
-                model = ScriptableObject.CreateInstance<YOLOModel>();
+                model = ScriptableObject.CreateInstance<TransmitterRecognitionModel>();
                 AssetDatabase.CreateAsset(model, ModelPath);
             }
-            model.Labels = AssetDatabase.LoadAssetAtPath<TextAsset>(ModelFolder + "coco.names.txt");
+            model.Labels = AssetDatabase.LoadAssetAtPath<TextAsset>(ModelFolder + "transmitter.names.txt");
             model.CpuThreads = 2;
-            model.LetterboxShader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/HoloCube/YOLO Inference/Letterbox.shader");
+            model.LetterboxShader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/HoloCube/Transmitter Inference/Letterbox.shader");
             EditorUtility.SetDirty(model);
             return model;
         }
@@ -116,8 +116,8 @@ namespace HoloCube.Editor
         {
             PlayerSettings.companyName = "HoloCube";
             PlayerSettings.productName = "HoloCube";
-            PlayerSettings.bundleVersion = "0.4";
-            PlayerSettings.Android.bundleVersionCode = 4;
+            PlayerSettings.bundleVersion = "0.5";
+            PlayerSettings.Android.bundleVersionCode = 5;
             PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.developer27.holocube");
             PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;

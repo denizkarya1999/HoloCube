@@ -26,7 +26,7 @@ public final class PyTorchWorker {
             }
             PyObject runtime = Python.getInstance().getModule("holocube_runtime");
             Log.i("HoloCube", runtime.callAttr("initialize", threads).toString());
-            Log.i("HoloCube", "HOLOCUBE_PT_READY: original YOLO26n checkpoint loaded on device");
+            Log.i("HoloCube", "HOLOCUBE_PT_READY: Transmitter Recognition Model loaded on device; class 0: Transmitter");
             return runtime;
         });
     }

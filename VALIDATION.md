@@ -1,4 +1,53 @@
-# HoloCube original .pt validation
+# HoloCube validation
+
+## Transmitter Recognition release — October 19, 2026
+
+- HoloCube **0.5 (code 5)**, package `com.developer27.holocube`, deployed to Quest 3S.
+- Replaced the general COCO detector with the user-supplied `holocube_transmitter.pt`.
+  The checkpoint is embedded unchanged. The only model class is **0: Transmitter**.
+- Model SHA-256:
+  `8c6e981c7a49ff52c7113cf9cd95763ae6495e3baab3e3d68c17a6919e3d8fef`.
+- Desktop PyTorch 1.8.1 matches the independent Ultralytics 8.4.56 / PyTorch 2.12.0
+  oracle on three transmitter frames within 0.001 confidence and 1 original-image
+  pixel. Blank input, RGBA orientation, startup reference mismatch, and modified
+  checkpoint rejection checks also passed.
+- Unity scene wiring, single-class decoder/filter checks, and Android ARM64/IL2CPP
+  build passed. Moved assets retain their original Unity GUIDs. The existing saved
+  scene was validated again after discarding regeneration-only object-ID changes.
+- Actual Vulkan GPU preprocessing passed padding, orientation, and sRGB checks;
+  its RGBA output produced the expected transmitter box through the new model.
+- The final APK guard and a separate archive inspection confirmed exactly one
+  embedded `.pt`: the checksum-verified transmitter checkpoint. The cached general
+  `yolo26n.pt` is removed during incremental builds. Recorder packaging checks passed.
+- Installed with `hzdb app install --replace`, preserving app data. Cold launch
+  focused the app and passed the crash scan. The on-device startup reference passed,
+  and a live camera frame returned 300 candidate rows in **157 ms**. This is one
+  worker-call sample, not sustained FPS or end-to-end display latency.
+- **The user confirmed a box labelled “Transmitter” appears around the transmitter
+  in the Quest 3S headset.**
+
+Headset log markers:
+
+```text
+HOLOCUBE_PT_DEVICE_PARITY_PASSED: Transmitter Recognition Model; reference boxes match.
+HOLOCUBE_PT_READY: Transmitter Recognition Model loaded on device; class 0: Transmitter
+HOLOCUBE_PT_CAMERA_FRAME: 300 detection rows in 157 ms
+```
+
+APK: `Builds/HoloCube.apk`, 111,063,016 bytes. SHA-256:
+`ee604a527600c11731ddcb3b280d3beac7835f09ae2c23c80d2c1c83c6c2fd72`.
+Local logs: `Builds/Build.log`, `Builds/Validate.log`, `Builds/ValidateGPU.log`,
+`Builds/Quest-transmitter.log`. Build artifacts and logs are excluded from Git.
+
+The three reference images come from the dataset source recording and may overlap
+training. These checks establish runtime compatibility and a successful live use,
+not a held-out accuracy benchmark. Generalization to other lighting, viewpoints,
+transmitter variants, multiple transmitters, and sustained thermal behavior remains
+unmeasured. Detection provides boxes and class labels, not optical data decoding.
+
+---
+
+# Historical general-detector validation
 
 Verified on October 4, 2026.
 

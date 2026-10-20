@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text;
 using HoloCube.QuestYOLO;
 using UnityEditor;
@@ -78,6 +79,7 @@ namespace HoloCube.Editor
             if (Directory.Exists(output)) return;
 
             using var archive = ZipFile.OpenRead(output);
+            CheckPackagedModel(archive);
             foreach (var entry in archive.Entries)
             {
                 if (!entry.FullName.EndsWith(".dex", StringComparison.OrdinalIgnoreCase)) continue;
@@ -88,6 +90,34 @@ namespace HoloCube.Editor
             }
             throw new BuildFailedException("The Android build is missing QuestCameraVideoRecorder. " +
                 "Include Assets/Plugins/Android/com/holocube/capture/QuestCameraVideoRecorder.java before deploying.");
+        }
+
+        private static void CheckPackagedModel(ZipArchive archive)
+        {
+            var python = archive.GetEntry("assets/chaquopy/app.imy") ??
+                archive.GetEntry("base/assets/chaquopy/app.imy");
+            if (python == null) throw new BuildFailedException("The embedded transmitter runtime is missing.");
+            using var buffer = new MemoryStream();
+            using (var source = python.Open()) source.CopyTo(buffer);
+            buffer.Position = 0;
+            using var package = new ZipArchive(buffer, ZipArchiveMode.Read);
+            int checkpoints = 0;
+            foreach (var entry in package.Entries)
+            {
+                if (!entry.FullName.EndsWith(".pt", StringComparison.OrdinalIgnoreCase)) continue;
+                checkpoints++;
+                if (entry.FullName != TransmitterRecognitionModel.CheckpointFile)
+                    throw new BuildFailedException("Unexpected model in APK: " + entry.FullName);
+                using var stream = entry.Open();
+                using var sha = SHA256.Create();
+                string hash = BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+                if (hash != TransmitterRecognitionModel.CheckpointHash)
+                    throw new BuildFailedException("The APK transmitter checkpoint does not match the approved weights.");
+            }
+            if (checkpoints != 1 || package.GetEntry("reference.f32") == null ||
+                package.GetEntry("reference.json") == null)
+                throw new BuildFailedException("The APK requires one transmitter checkpoint and its startup reference.");
+            Debug.Log("HOLOCUBE_TRANSMITTER_PACKAGE_PASSED: only the checksum-verified transmitter model is embedded.");
         }
     }
 }

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fdba79b425970779aa1fb736c6eddff0, type: 3}
-  m_Name: QuestYOLO
+  m_Name: TransmitterRecognition
   m_EditorClassIdentifier: 
   Labels: {fileID: 4900000, guid: 2675e9bcdaf84ace9740261cef8a7228, type: 3}
   CpuThreads: 2

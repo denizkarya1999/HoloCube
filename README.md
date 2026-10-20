@@ -2,16 +2,18 @@
 
 ![Device: Quest 3 / 3S](https://img.shields.io/badge/Device-Quest%203%20%2F%203S-0866FF)
 ![Unity 6000.0.66f2](https://img.shields.io/badge/Unity-6000.0.66f2-222222)
-![Model: YOLO26 nano](https://img.shields.io/badge/Model-YOLO26%20nano-6E40C9)
-![Original PyTorch checkpoint](https://img.shields.io/badge/Model%20format-Original%20.pt-EF6C00)
+![Model: Transmitter Recognition](https://img.shields.io/badge/Model-Transmitter%20Recognition-6E40C9)
+![Trained PyTorch checkpoint](https://img.shields.io/badge/Model%20format-Trained%20.pt-EF6C00)
 ![Runs on the headset](https://img.shields.io/badge/Inference-On%20device-238636)
 
-A standalone object detection app for **Meta Quest 3 / Quest 3S**.
-It sees the camera image, finds objects, and draws labelled boxes in your headset.
-The camera, model, and detection code all run on the Quest. The APK embeds
-Python, PyTorch, and the **original, unchanged `yolo26n.pt` checkpoint**. A computer
-is only needed to build or install the app. The HoloCube pipeline uses no model
-conversion, ONNX, TorchScript, server, or model download.
+A standalone **Transmitter Recognition** app for **Meta Quest 3 / Quest 3S**.
+It identifies the HoloCube transmitter in passthrough camera images and draws
+bounding boxes labelled **Transmitter** with confidence percentages in the headset.
+The camera, trained model, and detection code run on the Quest, offline. The APK
+embeds Python, PyTorch, and the supplied **`holocube_transmitter.pt`** checkpoint.
+The active model has one class, `0: Transmitter`; the general 80-class COCO model
+has been removed from the app. The trained detector uses the YOLO26n architecture.
+A computer is only needed to build or install the app.
 
 ## Android phone transmitter
 
@@ -27,11 +29,13 @@ IoT Connections via Software Defined Pepper’s Ghost* (ICNP 2024). The paper
 explores optical IoT communication using virtual 3D cubes, Pepper’s Ghost, and
 spatial/color encoding. [Read the paper](https://www.zhangxiao.me/data/ICNP24_HoloCube.pdf).
 
-This independent prototype provides the Quest camera → YOLO26 → AR label
-pipeline. The bundled model recognizes everyday COCO objects. Detecting HoloCube
-optical tags needs custom training; tag decoding, optical data transmission, and
-the paper’s control channel remain future work. This repository is not the
-authors’ official implementation or a reproduction of their reported results.
+This independent prototype provides the Quest camera → trained transmitter detector
+→ AR bounding-box pipeline. The recognition target is the transmitter assembly:
+black cube frame, central pyramid, and phone/base, as annotated in the supplied
+dataset. It does not decode optical data or identify individual transmitters.
+The paper’s optical data transmission and control channel remain future work.
+This repository is not the authors’ official implementation or a reproduction
+of their reported results.
 
 ## Start here
 
@@ -42,17 +46,16 @@ Read these three files in order:
 
 | Part | File | Its job |
 | --- | --- | --- |
-| **1. Main App** | `Assets/HoloCube/Main App/MainApp.cs` | Get a camera image, ask YOLO to process it, show the results. |
-| **2. YOLO Inference** | `Assets/HoloCube/YOLO Inference/YOLOInference.cs` | Resize the image, run the network, read and filter its results. |
-| **3. YOLO Model** | `Assets/HoloCube/YOLO Model/YOLOModel.cs` | Define the checkpoint, object names, and CPU settings. |
+| **1. Main App** | `Assets/HoloCube/Main App/MainApp.cs` | Get a camera image, ask the transmitter detector to process it, show the results. |
+| **2. Transmitter Inference** | `Assets/HoloCube/Transmitter Inference/TransmitterInference.cs` | Resize the image, run the network, read and filter its results. |
+| **3. Transmitter Model** | `Assets/HoloCube/Transmitter Model/TransmitterRecognitionModel.cs` | Define the checkpoint, object names, and CPU settings. |
 
 The complete flow is:
 
 ```text
-Quest camera → MainApp → YOLOInference → list of Detection objects
-                              ↑                      ↓
-                          YOLOModel           DetectionOverlay
-                                               boxes + labels
+Quest camera → MainApp → TransmitterInference → DetectionOverlay
+                               ↑                  boxes + labels
+                    TransmitterRecognitionModel
 ```
 
 `MainApp.Update()` is the entry point for each display frame. It reads the
@@ -66,46 +69,46 @@ on the headset CPU.
 ```text
 HoloCube/
 ├── Assets/
-│   ├── HoloCube/                         The standalone app
-│   │   ├── QuestYOLO.unity                Launch scene
-│   │   ├── Main App/
-│   │   │   ├── MainApp.cs                 Camera → detection → display
-│   │   │   └── DetectionOverlay.cs        Boxes and labels in the headset
-│   │   ├── YOLO Inference/
-│   │   │   ├── YOLOInference.cs           Submit an image and read detections
-│   │   │   ├── ImagePreprocessor.cs       Copy a small camera image from the GPU
-│   │   │   ├── Detection.cs               One detection result
-│   │   │   ├── DetectionFilter.cs         Decode and filter YOLO26 output
-│   │   │   ├── ImageLetterbox.cs          Resize and map box coordinates
-│   │   │   ├── Letterbox.shader           Resize with gray padding
-│   │   │   ├── Android/PyTorchWorker.java Background worker and Python bridge
-│   │   │   └── Python/
-│   │   │       ├── holocube_runtime.py    Pixels → PyTorch → detection rows
-│   │   │       └── checkpoint_runtime.py Load original .pt and run its layers
-│   │   ├── YOLO Model/
-│   │   │   ├── YOLOModel.cs               Checkpoint constants and class labels
-│   │   │   ├── QuestYOLO.asset            Saved model settings
-│   │   │   ├── yolo26n.pt                 Original YOLO26 nano checkpoint
-│   │   │   ├── coco.names.txt             80 labels in class-ID order
-│   │   │   ├── provenance.json           Source, runtime versions, checksum
-│   │   │   └── LICENSE.txt               Ultralytics model license
-│   │   └── Editor/                       Scene setup, builds, validation
-│   └── PassthroughCameraApiSamples/      Meta rig and reference samples
+│                                                       ├── HoloCube/                         The standalone app
+│                                                       │   ├── QuestYOLO.unity                Launch scene
+│                                                       │   ├── Main App/
+│                                                       │   │   ├── MainApp.cs                 Camera → detection → display
+│                                                       │   │   └── DetectionOverlay.cs        Boxes and labels in the headset
+│                                                       │   ├── Transmitter Inference/
+│                                                       │   │   ├── TransmitterInference.cs           Submit an image and read detections
+│                                                       │   │   ├── ImagePreprocessor.cs       Copy a small camera image from the GPU
+│                                                       │   │   ├── Detection.cs               One detection result
+│                                                       │   │   ├── DetectionFilter.cs         Decode and filter YOLO26 output
+│                                                       │   │   ├── ImageLetterbox.cs          Resize and map box coordinates
+│                                                       │   │   ├── Letterbox.shader           Resize with gray padding
+│                                                       │   │   ├── Android/PyTorchWorker.java Background worker and Python bridge
+│                                                       │   │   └── Python/
+│                                                       │   │       ├── holocube_runtime.py    Pixels → PyTorch → detection rows
+│                                                       │   │       └── checkpoint_runtime.py Load trained .pt and run its layers
+│                                                       │   ├── Transmitter Model/
+│                                                       │   │   ├── TransmitterRecognitionModel.cs               Checkpoint constants and class labels
+│                                                       │   │   ├── TransmitterRecognition.asset            Saved model settings
+│                                                       │   │   ├── holocube_transmitter.pt                 Trained transmitter checkpoint
+│                                                       │   │   ├── transmitter.names.txt             Single class: Transmitter
+│                                                       │   │   ├── provenance.json           Source, runtime versions, checksum
+│                                                       │   │   └── LICENSE.txt               Ultralytics model license
+│                                                       │   └── Editor/                       Scene setup, builds, validation
+│                                                       └── PassthroughCameraApiSamples/      Meta rig and reference samples
 ├── Packages/
-│   ├── manifest.json                     Unity dependencies
-│   └── com.meta.xr.sdk.core/              Embedded Meta SDK with Linux fix
-├── ProjectSettings/                      Unity and Android settings
+│                                                       ├── manifest.json                     Unity dependencies
+│                                                       └── com.meta.xr.sdk.core/              Embedded Meta SDK with Linux fix
+├── ProjectSettings/                                    Unity and Android settings
 ├── Tools/
-│   ├── run-unity.sh                       Build or validate from a terminal
-│   ├── setup-python.sh                    Prepare isolated build tools
-│   ├── validate-pt.py                     Test the unchanged .pt checkpoint
-│   └── Fixtures/YOLO26/                   PyTorch/Unity inference comparison
-├── Docs/DEVELOPMENT.md                    Setup, model format, limitations
-├── .github/labels.json                    GitHub issue-label definitions
-├── VALIDATION.md                         Recorded checks and device status
-├── UPSTREAM_README.md                    Original Meta documentation
-├── LICENSE.txt                           Upstream license notice
-└── README.md                             Start here
+│                                                       ├── run-unity.sh                       Build or validate from a terminal
+│                                                       ├── setup-python.sh                    Prepare isolated build tools
+│                                                       ├── validate-pt.py                     Test the unchanged .pt checkpoint
+│                                                       └── Fixtures/Transmitter/                   PyTorch/Unity inference comparison
+├── Docs/DEVELOPMENT.md                                 Setup, model format, limitations
+├── .github/labels.json                                 GitHub issue-label definitions
+├── VALIDATION.md                                       Recorded checks and device status
+├── UPSTREAM_README.md                                  Original Meta documentation
+├── LICENSE.txt                                         Upstream license notice
+└── README.md                                           Start here
 ```
 
 Unity `.meta` files are kept in Git beside their assets; they are omitted from
@@ -126,7 +129,7 @@ Keep the supporting assets because the scene setup reuses Meta's configured rig.
 | Change button actions or status messages | `MainApp.cs`. |
 | Change label text or where boxes appear | `DetectionOverlay.cs`. |
 | Understand the results | `DetectionFilter.cs` reads YOLO26 output and removes weak results. |
-| Inspect the weights and object names | Select `YOLO Model/QuestYOLO.asset`. |
+| Inspect the weights and object names | Select `Transmitter Model/TransmitterRecognition.asset`. |
 | Train for different objects | Extend the checkpoint loader and validation; arbitrary .pt files are not interchangeable. |
 
 A **Detection** contains a class ID (an index into the names file), a confidence
@@ -146,7 +149,7 @@ Android app ID: `com.developer27.holocube`.
    and writes `Builds/HoloCube.apk`; preserve custom scene edits before using it.
 3. Connect a Quest with developer mode enabled and sideload the APK.
 4. Open **HoloCube** in the headset and allow camera access.
-5. On startup, only detection boxes and labels with confidence percentages are shown. Press the left controller’s **Menu (three lines)** button to show or hide the controls. **A** toggles YOLO inference; “Inference Mode: Off” disappears after three seconds. Hold **B** for YOLO data collection; a red circle and **Recording** appear above your view while recording. Release **B** to stop: the indicator disappears, followed by saving progress and the saved filename for six seconds. MP4s are saved in `Movies/HoloCube` on the headset. Recording failures also appear briefly in the same area. Press **X** to open About HoloCube and **Y** to view Settings. In Settings, use the left joystick up/down to select the confidence threshold or maximum number of boxes, then left/right to adjust the selected value.
+5. On startup, only detection boxes and labels with confidence percentages are shown. Press the left controller’s **Menu (three lines)** button to show or hide the controls. **A** toggles transmitter recognition; “Inference Mode: Off” disappears after three seconds. Hold **B** to record training video; a red circle and **Recording** appear above your view while recording. Release **B** to stop: the indicator disappears, followed by saving progress and the saved filename for six seconds. MP4s are saved in `Movies/HoloCube` on the headset. Recording failures also appear briefly in the same area. Press **X** to open About HoloCube and **Y** to view Settings. In Settings, use the left joystick up/down to select the confidence threshold or maximum number of boxes, then left/right to adjust the selected value.
 
 Dialogs and recording messages use Michigan Maize text (`#FFCB05`) on Michigan Blue
 backgrounds (`#00274C`), following the [U-M color palette](https://brand.umich.edu/wp-content/uploads/2025/02/250027-U-M-Style-Guide-February2025.pdf).
@@ -177,13 +180,14 @@ For command-line builds, run `bash Tools/run-unity.sh Build` from this folder.
 
 See [development notes](Docs/DEVELOPMENT.md) for SDK versions, model format,
 performance settings, and limitations; [validation results](VALIDATION.md) record
-what has actually been tested. The bundled model is **Ultralytics YOLO26 nano**,
-with 80 COCO classes, an end-to-end `[1,300,6]` output, and 320 × 320 input. This sample detects objects; it does not track their
-identities across frames.
+what has actually been tested. The bundled **Transmitter Recognition Model** uses
+a trained YOLO26n network with one class, an end-to-end `[1,300,6]` output, and
+320 × 320 input. It does not track individual identities across frames.
 
 ## Quest screenshots
 
-Captured on a Quest 3S on October 5, 2026. These are original stereo headset
+Historical screenshots captured with the previous general detector on a Quest 3S
+on October 5, 2026. These are original stereo headset
 screenshots; each image contains the left-eye and right-eye views.
 
 **Settings:** bold labels, icons, boxed values, and the saved-video notification.
@@ -210,26 +214,10 @@ screenshots; each image contains the left-eye and right-eye views.
 
 ### Detection labels
 
-The model predicts the 80 COCO classes below. Their zero-based IDs follow the
-order in [coco.names.txt](Assets/HoloCube/YOLO%20Model/coco.names.txt), from
-`person` (0) to `toothbrush` (79). These are object classes, not optical tag IDs.
-
-<details>
-<summary>Show all 80 object labels</summary>
-
-```text
-person, bicycle, car, motorcycle, airplane, bus, train, truck, boat, traffic light,
-fire hydrant, stop sign, parking meter, bench, bird, cat, dog, horse, sheep, cow,
-elephant, bear, zebra, giraffe, backpack, umbrella, handbag, tie, suitcase, frisbee,
-skis, snowboard, sports ball, kite, baseball bat, baseball glove, skateboard,
-surfboard, tennis racket, bottle, wine glass, cup, fork, knife, spoon, bowl, banana,
-apple, sandwich, orange, broccoli, carrot, hot dog, pizza, donut, cake, chair, couch,
-potted plant, bed, dining table, toilet, tv, laptop, mouse, remote, keyboard, cell
-phone, microwave, oven, toaster, sink, refrigerator, book, clock, vase, scissors,
-teddy bear, hair drier, toothbrush
-```
-
-</details>
+The model predicts only **Transmitter** (class ID `0`). Its label is stored in
+[transmitter.names.txt](Assets/HoloCube/Transmitter%20Model/transmitter.names.txt).
+The settings still allow multiple boxes when multiple transmitters are visible.
+The default confidence threshold is 35%.
 
 ### GitHub issue labels
 

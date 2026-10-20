@@ -19,7 +19,7 @@ namespace HoloCube.Editor
             CheckSavedScene();
             CheckCoordinatesAndDecoder();
             CheckRealModel();
-            Debug.Log("HOLOCUBE_VALIDATION_PASSED: YOLO26n scene, letterbox/decoder checks, original .pt inference matches reference.");
+            Debug.Log("HOLOCUBE_VALIDATION_PASSED: transmitter scene, letterbox/decoder checks, trained .pt inference matches reference.");
         }
 
         private static void CheckSavedScene()
@@ -35,8 +35,8 @@ namespace HoloCube.Editor
             Require(Object.FindFirstObjectByType<SentisInferenceRunManager>() == null, "Single inference pipeline");
             Require(app.Model.CpuThreads >= 1 && app.Model.CpuThreads <= 4, "Background CPU worker threads");
             Require(app.Model.LetterboxShader != null, "Bundled letterbox shader");
-            Require(File.Exists(QuestYoloSceneSetup.ModelFolder + YOLOModel.CheckpointFile), "Original .pt checkpoint");
-            Require(AssetDatabase.GetAssetPath(app.Model.Labels) == QuestYoloSceneSetup.ModelFolder + "coco.names.txt", "YOLO26 class names");
+            Require(File.Exists(QuestYoloSceneSetup.ModelFolder + TransmitterRecognitionModel.CheckpointFile), "Trained transmitter checkpoint");
+            Require(AssetDatabase.GetAssetPath(app.Model.Labels) == QuestYoloSceneSetup.ModelFolder + "transmitter.names.txt", "Transmitter class name");
         }
 
         internal static void CheckRecordingSource()
@@ -78,28 +78,28 @@ namespace HoloCube.Editor
             {
                 0, 70, 320, 250, 0.9f, 0,  // Full image.
                 0, 70, 320, 250, 0.8f, 0,  // End-to-end outputs must not undergo NMS again.
-                0, 70, 320, 250, 0.1f, 1,  // Too weak.
-                0, 70, 320, 250, 0.9f, 80, // Invalid class.
+                0, 70, 320, 250, 0.1f, 0,  // Too weak.
+                0, 70, 320, 250, 0.9f, 1,  // Only class 0 is valid.
                 0, 70, 320, 250, float.NaN, 0,
                 10, 80, 0, 70, 0.9f, 0    // Invalid rectangle.
             };
             var output = new float[300 * 6];
             Array.Copy(sampleRows, output, sampleRows.Length);
-            var results = DetectionFilter.ReadYOLO26(output, landscape, 80, 0.35f, 24);
+            var results = DetectionFilter.ReadYOLO26(output, landscape, 1, 0.35f, 24);
             Require(results.Count == 2 && results[0].Box == new Vector4(0, 0, 1280, 720), "Confidence/classes/coordinates; no second NMS");
-            Require(DetectionFilter.ReadYOLO26(output, landscape, 80, 0.35f, 1).Count == 1, "Detection limit");
-            Require(DetectionFilter.ReadYOLO26(output, landscape, 80, 1, 24).Count == 0, "No confident results");
+            Require(DetectionFilter.ReadYOLO26(output, landscape, 1, 0.35f, 1).Count == 1, "Detection limit");
+            Require(DetectionFilter.ReadYOLO26(output, landscape, 1, 1, 24).Count == 0, "No confident results");
             var wrongShape = new float[84 * 2100];
             bool rejected = false;
-            try { DetectionFilter.ReadYOLO26(wrongShape, landscape, 80, 0.35f, 24); }
+            try { DetectionFilter.ReadYOLO26(wrongShape, landscape, 1, 0.35f, 24); }
             catch (InvalidOperationException) { rejected = true; }
             Require(rejected, "Reject non-end-to-end model output");
         }
 
         private static void CheckRealModel()
         {
-            var definition = AssetDatabase.LoadAssetAtPath<YOLOModel>(QuestYoloSceneSetup.ModelPath);
-            Require(definition.LoadLabels().Length == 80, "80 COCO classes");
+            var definition = AssetDatabase.LoadAssetAtPath<TransmitterRecognitionModel>(QuestYoloSceneSetup.ModelPath);
+            Require(definition.LoadLabels().Length == 1 && definition.LoadLabels()[0] == "Transmitter", "Single transmitter class");
             Require(File.Exists(PyTorchAndroidBuild.PythonPath), "Run bash Tools/setup-python.sh first");
             using var process = new System.Diagnostics.Process();
             process.StartInfo = new System.Diagnostics.ProcessStartInfo

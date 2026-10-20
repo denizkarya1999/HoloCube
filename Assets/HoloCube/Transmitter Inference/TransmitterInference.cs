@@ -6,7 +6,7 @@ using UnityEngine;
 namespace HoloCube.QuestYOLO
 {
     /// <summary>Camera image → background PyTorch worker → labelled detections.</summary>
-    public sealed class YOLOInference : IDisposable
+    public sealed class TransmitterInference : IDisposable
     {
         public Vector2Int ImageSize => images.ImageSize;
         public string[] Labels { get; }
@@ -16,7 +16,7 @@ namespace HoloCube.QuestYOLO
         private readonly AndroidJavaObject worker;
         private bool disposed;
 
-        public YOLOInference(YOLOModel definition)
+        public TransmitterInference(TransmitterRecognitionModel definition)
         {
             Labels = definition.LoadLabels();
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -34,7 +34,7 @@ namespace HoloCube.QuestYOLO
         // runs on a separate Android thread while Unity keeps rendering.
         public IEnumerator Detect(Texture image, float confidence, int limit, Action<List<Detection>> completed)
         {
-            if (disposed) throw new ObjectDisposedException(nameof(YOLOInference));
+            if (disposed) throw new ObjectDisposedException(nameof(TransmitterInference));
             if (IsBusy) throw new InvalidOperationException("Only one image may be processed at a time.");
             if (image == null) throw new ArgumentNullException(nameof(image));
             IsBusy = true;
