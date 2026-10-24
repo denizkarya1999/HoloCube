@@ -1,7 +1,7 @@
 # HoloCube Transmitter
 
 A small, offline Android phone companion to the HoloCube VR app. It opens the
-supplied **HoloCube_CenterBias_Frame_012153.png** on a black, full-screen canvas
+supplied **unnamed.png** optical pattern on a black, full-screen canvas
 and keeps the display awake while the app is visible.
 
 ## Use
@@ -16,7 +16,7 @@ and keeps the display awake while the app is visible.
    unobstructed image.
 4. Swipe from a screen edge to reveal Android navigation and leave the app.
 
-The complete 1920 × 1080 image is fitted without cropping or stretching. Extra
+The complete 1920 × 1200 image is fitted without cropping or stretching. Extra
 screen area stays black on displays with different proportions. Content avoids
 camera cutouts. Android can override orientation preferences on large screens;
 the image still fits within the available window.
@@ -80,7 +80,7 @@ For real timeout behavior, verify the phone remains awake beyond its configured
 timeout with the image visible, then that normal timeout resumes after Home.
 
 Image SHA-256 (original PNG bytes are preserved):
-`2d6db5f2a9992d3b115d58cf285a79664ffe5aaba35ba3f4883d9fb8859fafd9`.
+`7b25031ad241596fe8f22cfa3d14c8229c419091e95fff5116146b389f6d6c6e`.
 
 The app uses Android's [visible-window keep-screen-on behavior](https://developer.android.com/develop/background-work/background-tasks/awake/screen-on)
 and [immersive system bars](https://developer.android.com/develop/ui/views/layout/immersive).

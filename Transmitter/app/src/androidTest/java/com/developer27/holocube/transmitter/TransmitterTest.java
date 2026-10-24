@@ -44,13 +44,13 @@ public final class TransmitterTest {
             ImageView image = activity.findViewById(R.id.transmitter_image);
             assertTrue(image.getWidth() > image.getHeight());
             assertEquals(1920, image.getDrawable().getIntrinsicWidth());
-            assertEquals(1080, image.getDrawable().getIntrinsicHeight());
-            RectF bounds = new RectF(0, 0, 1920, 1080);
+            assertEquals(1200, image.getDrawable().getIntrinsicHeight());
+            RectF bounds = new RectF(0, 0, 1920, 1200);
             image.getImageMatrix().mapRect(bounds);
             assertTrue(bounds.left >= -1 && bounds.top >= -1);
             assertTrue(bounds.right <= image.getWidth() + 1);
             assertTrue(bounds.bottom <= image.getHeight() + 1);
-            assertEquals(16f / 9f, bounds.width() / bounds.height(), 0.001f);
+            assertEquals(16f / 10f, bounds.width() / bounds.height(), 0.001f);
             assertEquals(activity.findViewById(R.id.root).getWidth() / 2f,
                     image.getLeft() + bounds.centerX(), 1f);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
