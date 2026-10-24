@@ -20,16 +20,26 @@
   startup reference files. Recorder packaging checks also passed.
 - Installed through `hzdb app install --replace`, preserving existing app data.
   Device package information confirms version 0.6 / code 6. The first cold launch
-  focused the app and passed the crash scan. The headset subsequently suspended
-  the app; a wake-and-relaunch attempt encountered the headset lock screen.
-  On-device model startup parity and live camera inference are not yet confirmed
-  for this release. The successful device inference results below concern 0.5.
+  focused the app and passed the crash scan. After the user woke the headset and
+  opened HoloCube, the on-device startup reference passed and live camera inference
+  returned 300 candidate rows in **191 ms**. This is one worker-call sample, not
+  sustained FPS or end-to-end display latency. These markers were recorded on
+  October 23 at 21:26:35, after the version 0.6 installation.
+
+Headset log markers:
+
+```text
+HOLOCUBE_PT_DEVICE_PARITY_PASSED: Transmitter Recognition Model; reference boxes match.
+HOLOCUBE_PT_READY: Transmitter Recognition Model loaded on device; class 0: Transmitter
+HOLOCUBE_PT_CAMERA_FRAME: 300 detection rows in 191 ms
+```
 
 APK: `Builds/HoloCube.apk`, 111,053,040 bytes. SHA-256:
 `fda6445ab2f68b7f3b3f2e7f05a7f0086e1830fb7ee7ad67e71331de48f307ce`.
 Local logs: `Builds/Build.log`, `Builds/Validate.log`, `Builds/ValidateGPU.log`,
 `Builds/Validate-300frames-python.log`, `Builds/Validate-300frames-gpu-model.log`,
-`Builds/Quest-300frames-app.json`, and `Builds/Quest-300frames-launch.json`.
+`Builds/Quest-300frames-app.json`, `Builds/Quest-300frames-launch.json`, and
+`Builds/Quest-300frames-live.log`.
 Build artifacts and device logs are excluded from Git.
 
 The fixtures come from the validation split of the prepared 300-frame dataset
