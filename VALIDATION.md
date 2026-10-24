@@ -20,14 +20,32 @@
   Model SHA-256: `3da988ae9e3aa5a66b175adb6275463d21f48828faac5ad77ebd0465570e7cf5`.
 - Installed with `hzdb app install --replace`, preserving app data. Device package
   information confirms 0.7 / code 7. Cold launch focused the app and passed its
-  crash scan. The headset then suspended the app before model startup; live
-  single-box verification awaits the user wearing the headset and facing the transmitter.
+  crash scan. After the user opened HoloCube facing the transmitter, a fresh
+  launch confirmed startup model parity and live camera inference. The first
+  logged camera worker call took **147 ms**, and the Unity pipeline reported
+  exactly one highest-confidence detection with its fixed limit of 1. These
+  markers were captured on October 23 at 21:35:44. This is a single worker-call
+  timing sample, not sustained FPS or end-to-end display latency.
+- A subsequent stereo headset screenshot visually confirms one green box labelled
+  **Transmitter 98%** around the transmitter, rendered once in each eye's view.
+  The local capture is `Builds/Quest-single-box-overlay.png`.
+
+Headset log markers:
+
+```text
+HOLOCUBE_PT_DEVICE_PARITY_PASSED: Transmitter Recognition Model; reference boxes match.
+HOLOCUBE_PT_READY: Transmitter Recognition Model loaded on device; class 0: Transmitter
+HOLOCUBE_PT_CAMERA_FRAME: 300 detection rows in 147 ms
+HOLOCUBE_TRANSMITTER_SINGLE_BOX: 1 detection selected; highest confidence; limit 1.
+```
 
 APK: `Builds/HoloCube.apk`, 111,049,244 bytes. SHA-256:
 `0b44fc1910b12ed70780dc523318b281f6b29ab820dcd51f3a61eaaaa5494de4`.
 Local logs: `Builds/Build-single-box.log`, `Builds/Validate-single-box.log`,
 `Builds/Quest-single-box-app.json`, `Builds/Quest-single-box-launch.log`, and
-`Builds/Quest-single-box.log`. Artifacts and logs remain excluded from Git.
+`Builds/Quest-single-box.log`; live verification is recorded in
+`Builds/Quest-single-box-live-launch.log` and `Builds/Quest-single-box-live-relaunch.log`.
+Artifacts and logs remain excluded from Git.
 
 This cap chooses one candidate per frame; it does not add object tracking or
 improve the detector's accuracy. The model limitations documented below still apply.
