@@ -37,7 +37,6 @@ namespace HoloCube.QuestYOLO
         [Header("Which detections to show")]
         [Tooltip("Minimum confidence: 0.35 means 35%.")]
         [Range(0, 1)] public float Confidence = 0.35f;
-        [Min(1)] public int MaxDetections = 24;
 
         [Header("Headset performance")]
         [Tooltip("Seconds to wait after a detection finishes before capturing again.")]
@@ -58,7 +57,6 @@ namespace HoloCube.QuestYOLO
         private bool recordingAttemptedForCurrentHold;
         private bool showControllerHelp;
         private MenuPage menuPage;
-        private int selectedSettingIndex;
         private float nextSettingsJoystickActionTime;
         private float nextRecordingStartAttemptTime;
         private string statusMessage = string.Empty;
@@ -187,28 +185,14 @@ namespace HoloCube.QuestYOLO
                 return;
 
             Vector2 stick = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.LTouch);
-            if (Mathf.Abs(stick.y) >= SettingsStickDeadzone)
-            {
-                selectedSettingIndex = stick.y > 0f ? 0 : 1;
-                nextSettingsJoystickActionTime = Time.unscaledTime + SettingsJoystickRepeatInterval;
-                return;
-            }
-
             if (Mathf.Abs(stick.x) < SettingsStickDeadzone)
                 return;
 
             int direction = stick.x > 0f ? 1 : -1;
-            if (selectedSettingIndex == 0)
-            {
-                Confidence = Mathf.Clamp(
-                    Mathf.Round((Confidence + direction * 0.05f) * 100f) / 100f,
-                    0.05f,
-                    1f);
-            }
-            else
-            {
-                MaxDetections = Mathf.Clamp(MaxDetections + direction, 1, 80);
-            }
+            Confidence = Mathf.Clamp(
+                Mathf.Round((Confidence + direction * 0.05f) * 100f) / 100f,
+                0.05f,
+                1f);
 
             nextSettingsJoystickActionTime = Time.unscaledTime + SettingsJoystickRepeatInterval;
         }
@@ -278,7 +262,7 @@ namespace HoloCube.QuestYOLO
             var cameraPose = CameraAccess.GetCameraPose();
             float captureTime = Time.unscaledTime;
             pendingDetection = inference.Detect(
-                image, Confidence, MaxDetections,
+                image, Confidence,
                 detections => ShowDetections(detections, cameraPose, captureTime));
         }
 
@@ -352,7 +336,7 @@ namespace HoloCube.QuestYOLO
                 statusIconObject.SetActive(showStatusIcon);
             if (showSettings)
             {
-                SettingsView.Refresh(Confidence, MaxDetections, selectedSettingIndex);
+                SettingsView.Refresh(Confidence);
                 return;
             }
             Vector2 textInsetMin = showAbout ? new Vector2(24, 24) : new Vector2(104, 20);
@@ -391,9 +375,9 @@ namespace HoloCube.QuestYOLO
                         "<b>Institution:</b> University of Michigan-Dearborn";
                 case MenuPage.Settings:
                     return $"<size=32><b>Settings</b></size>\n" +
-                        $"{(selectedSettingIndex == 0 ? ">" : " ")} <b>Confidence Thresholds</b>: {Confidence:0.00}\n" +
-                        $"{(selectedSettingIndex == 1 ? ">" : " ")} <b>Number of boxes</b>: {MaxDetections}\n" +
-                        "Joystick up/down: select · left/right: adjust";
+                        $"> <b>Confidence Thresholds</b>: {Confidence:0.00}\n" +
+                        $"<b>Number of boxes (fixed)</b>: {TransmitterRecognitionModel.MaxDetections}\n" +
+                        "Joystick left/right: adjust confidence";
                 default:
                     return string.IsNullOrEmpty(statusMessage) ? "HoloCube" : statusMessage;
             }

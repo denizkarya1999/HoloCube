@@ -15,6 +15,7 @@ namespace HoloCube.QuestYOLO
         private readonly ImagePreprocessor images;
         private readonly AndroidJavaObject worker;
         private bool disposed;
+        private bool loggedFirstDetection;
 
         public TransmitterInference(TransmitterRecognitionModel definition)
         {
@@ -32,7 +33,7 @@ namespace HoloCube.QuestYOLO
 
         // MainApp advances this iterator every display frame. Python inference
         // runs on a separate Android thread while Unity keeps rendering.
-        public IEnumerator Detect(Texture image, float confidence, int limit, Action<List<Detection>> completed)
+        public IEnumerator Detect(Texture image, float confidence, Action<List<Detection>> completed)
         {
             if (disposed) throw new ObjectDisposedException(nameof(TransmitterInference));
             if (IsBusy) throw new InvalidOperationException("Only one image may be processed at a time.");
@@ -48,7 +49,15 @@ namespace HoloCube.QuestYOLO
                 worker.Call("submit", pixels);
                 while (!worker.Call<bool>("isDone")) yield return null;
                 var rows = worker.Call<float[]>("take");
-                completed?.Invoke(DetectionFilter.ReadYOLO26(rows, images.Layout, Labels.Length, confidence, limit));
+                // Keep only the strongest valid Transmitter, regardless of scene or UI settings.
+                var detections = DetectionFilter.ReadYOLO26(rows, images.Layout, Labels.Length,
+                    confidence, TransmitterRecognitionModel.MaxDetections);
+                if (!loggedFirstDetection && detections.Count > 0)
+                {
+                    Debug.Log($"HOLOCUBE_TRANSMITTER_SINGLE_BOX: {detections.Count} detection selected; highest confidence; limit {TransmitterRecognitionModel.MaxDetections}.");
+                    loggedFirstDetection = true;
+                }
+                completed?.Invoke(detections);
             }
             finally
             {

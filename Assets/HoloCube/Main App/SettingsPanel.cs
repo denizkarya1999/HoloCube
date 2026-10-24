@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace HoloCube.QuestYOLO
 {
-    /// <summary>Displays joystick-adjusted settings and highlights the selected value.</summary>
+    /// <summary>Displays adjustable confidence and the fixed single-box limit.</summary>
     public sealed class SettingsPanel : MonoBehaviour
     {
         public Text ConfidenceValue;
@@ -18,10 +18,8 @@ namespace HoloCube.QuestYOLO
         private static readonly Color SelectedBlue = new Color32(0, 55, 103, 255);
         private bool hasState;
         private float lastConfidence;
-        private int lastMaxBoxes;
-        private int lastSelectedIndex;
 
-        public void Refresh(float confidence, int maxBoxes, int selectedIndex)
+        public void Refresh(float confidence)
         {
             if (!hasState || !confidence.Equals(lastConfidence))
             {
@@ -32,20 +30,15 @@ namespace HoloCube.QuestYOLO
                 }
                 lastConfidence = confidence;
             }
-            if (!hasState || maxBoxes != lastMaxBoxes)
+            if (!hasState)
             {
                 if (BoxCountValue != null)
                 {
-                    BoxCountValue.text = maxBoxes.ToString(CultureInfo.InvariantCulture);
+                    BoxCountValue.text = TransmitterRecognitionModel.MaxDetections.ToString(CultureInfo.InvariantCulture);
                     BoxCountValue.color = Maize;
                 }
-                lastMaxBoxes = maxBoxes;
-            }
-            if (!hasState || selectedIndex != lastSelectedIndex)
-            {
-                SetSelected(ConfidenceBox, selectedIndex == 0);
-                SetSelected(BoxCountBox, selectedIndex == 1);
-                lastSelectedIndex = selectedIndex;
+                SetSelected(ConfidenceBox, true);
+                SetSelected(BoxCountBox, false);
             }
             hasState = true;
         }

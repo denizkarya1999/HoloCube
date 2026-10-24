@@ -8,12 +8,13 @@
 
 A standalone **Transmitter Recognition** app for **Meta Quest 3 / Quest 3S**.
 It identifies the HoloCube transmitter in passthrough camera images and draws
-bounding boxes labelled **Transmitter** with confidence percentages in the headset.
+at most one bounding box labelled **Transmitter** with its confidence percentage in the headset.
+The highest-confidence valid detection above the selected threshold is shown.
 The camera, trained model, and detection code run on the Quest, offline. The APK
 embeds Python, PyTorch, and the supplied **`holocube_transmitter.pt`** checkpoint.
 The active model has one class, `0: Transmitter`; the general 80-class COCO model
 has been removed from the app. The trained detector uses the YOLO26n architecture.
-Version 0.6 bundles the replacement checkpoint supplied on October 23, 2026;
+Version 0.7 keeps the replacement checkpoint supplied on October 23, 2026;
 its checksum and dataset context are recorded in the model's `provenance.json`.
 A computer is only needed to build or install the app.
 
@@ -127,7 +128,7 @@ Keep the supporting assets because the scene setup reuses Meta's configured rig.
 | I want to… | Change this |
 | --- | --- |
 | Show fewer uncertain detections | Increase **Confidence** on Main App. |
-| Change the number of boxes | Change **Max Detections** on Main App. |
+| Understand the single-box limit | The transmitter pipeline always keeps the strongest valid detection; Settings shows a fixed limit of 1. |
 | Change button actions or status messages | `MainApp.cs`. |
 | Change label text or where boxes appear | `DetectionOverlay.cs`. |
 | Understand the results | `DetectionFilter.cs` reads YOLO26 output and removes weak results. |
@@ -151,7 +152,7 @@ Android app ID: `com.developer27.holocube`.
    and writes `Builds/HoloCube.apk`; preserve custom scene edits before using it.
 3. Connect a Quest with developer mode enabled and sideload the APK.
 4. Open **HoloCube** in the headset and allow camera access.
-5. On startup, only detection boxes and labels with confidence percentages are shown. Press the left controller’s **Menu (three lines)** button to show or hide the controls. **A** toggles transmitter recognition; “Inference Mode: Off” disappears after three seconds. Hold **B** to record training video; a red circle and **Recording** appear above your view while recording. Release **B** to stop: the indicator disappears, followed by saving progress and the saved filename for six seconds. MP4s are saved in `Movies/HoloCube` on the headset. Recording failures also appear briefly in the same area. Press **X** to open About HoloCube and **Y** to view Settings. In Settings, use the left joystick up/down to select the confidence threshold or maximum number of boxes, then left/right to adjust the selected value.
+5. On startup, only the detection box and label with its confidence percentage are shown. Press the left controller’s **Menu (three lines)** button to show or hide the controls. **A** toggles transmitter recognition; “Inference Mode: Off” disappears after three seconds. Hold **B** to record training video; a red circle and **Recording** appear above your view while recording. Release **B** to stop: the indicator disappears, followed by saving progress and the saved filename for six seconds. MP4s are saved in `Movies/HoloCube` on the headset. Recording failures also appear briefly in the same area. Press **X** to open About HoloCube and **Y** to view Settings. In Settings, use the left joystick left/right to adjust the confidence threshold. The number of boxes is fixed at 1.
 
 Dialogs and recording messages use Michigan Maize text (`#FFCB05`) on Michigan Blue
 backgrounds (`#00274C`), following the [U-M color palette](https://brand.umich.edu/wp-content/uploads/2025/02/250027-U-M-Style-Guide-February2025.pdf).
@@ -161,9 +162,9 @@ Dialogs use larger 28-point text, and About features a maize cube-and-HoloCube
 wordmark above the project details.
 Rounded cards, soft shadows, maize accents, icon badges, and bold headings keep
 the dialog styling consistent throughout the app.
-Settings presents **Confidence Thresholds** and **Number of boxes** as bold rows
+Settings presents **Confidence Thresholds** and **Number of boxes (fixed)** as bold rows
 with individual icons and boxed values; the brighter value border marks the
-joystick selection. The About logo displays only **HoloCube**.
+adjustable confidence threshold. The About logo displays only **HoloCube**.
 
 You can disconnect the computer after installation. The weights and class names
 are included in the app; no server or model download is needed. Labels marked
@@ -218,8 +219,8 @@ screenshots; each image contains the left-eye and right-eye views.
 
 The model predicts only **Transmitter** (class ID `0`). Its label is stored in
 [transmitter.names.txt](Assets/HoloCube/Transmitter%20Model/transmitter.names.txt).
-The settings still allow multiple boxes when multiple transmitters are visible.
-The default confidence threshold is 35%.
+Only the strongest valid transmitter receives a box, even when multiple candidates
+are visible. No box is shown if none meets the confidence threshold, which defaults to 35%.
 
 ### GitHub issue labels
 

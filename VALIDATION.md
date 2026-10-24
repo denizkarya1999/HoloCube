@@ -1,5 +1,39 @@
 # HoloCube validation
 
+## Single Transmitter box release — October 23, 2026
+
+- HoloCube **0.7 (code 7)**, package `com.developer27.holocube`, installed on Quest 3S.
+- The transmitter pipeline now returns at most one detection: the highest-confidence
+  valid Transmitter above the selected threshold. If none qualifies, no box is shown.
+  The limit is fixed in the pipeline; the old scene field and joystick box-count
+  adjustment have been removed. Settings shows **Number of boxes (fixed): 1** and
+  still lets the user adjust confidence with the left joystick's left/right axis.
+- Unity validation passed with deliberately unsorted candidates: the strongest
+  valid transmitter wins, while stronger wrong-class and invalid-box candidates
+  are rejected. The no-confident-result case returns no box. Existing coordinates,
+  scene wiring, model parity, and negative-input checks also passed.
+- Android ARM64/IL2CPP build, recorder packaging, and the single-model packaging
+  guard passed. The saved scene was validated again after discarding unrelated
+  regeneration-only object-ID changes.
+- Independent APK inspection confirmed the checkpoint is unchanged from 0.6 and
+  matches the supplied Downloads file byte for byte; startup references also match.
+  Model SHA-256: `3da988ae9e3aa5a66b175adb6275463d21f48828faac5ad77ebd0465570e7cf5`.
+- Installed with `hzdb app install --replace`, preserving app data. Device package
+  information confirms 0.7 / code 7. Cold launch focused the app and passed its
+  crash scan. The headset then suspended the app before model startup; live
+  single-box verification awaits the user wearing the headset and facing the transmitter.
+
+APK: `Builds/HoloCube.apk`, 111,049,244 bytes. SHA-256:
+`0b44fc1910b12ed70780dc523318b281f6b29ab820dcd51f3a61eaaaa5494de4`.
+Local logs: `Builds/Build-single-box.log`, `Builds/Validate-single-box.log`,
+`Builds/Quest-single-box-app.json`, `Builds/Quest-single-box-launch.log`, and
+`Builds/Quest-single-box.log`. Artifacts and logs remain excluded from Git.
+
+This cap chooses one candidate per frame; it does not add object tracking or
+improve the detector's accuracy. The model limitations documented below still apply.
+
+---
+
 ## Updated Transmitter Recognition release — October 23, 2026
 
 - HoloCube **0.6 (code 6)**, package `com.developer27.holocube`, installed on Quest 3S.

@@ -76,19 +76,22 @@ namespace HoloCube.Editor
 
             var sampleRows = new float[]
             {
-                0, 70, 320, 250, 0.9f, 0,  // Full image.
-                0, 70, 320, 250, 0.8f, 0,  // End-to-end outputs must not undergo NMS again.
+                0, 70, 320, 250, 0.8f, 0,  // Deliberately unsorted candidates.
+                0, 70, 320, 250, 0.9f, 0,  // End-to-end outputs must not undergo NMS again.
                 0, 70, 320, 250, 0.1f, 0,  // Too weak.
-                0, 70, 320, 250, 0.9f, 1,  // Only class 0 is valid.
+                0, 70, 320, 250, 0.99f, 1, // A stronger wrong-class result must not win.
                 0, 70, 320, 250, float.NaN, 0,
-                10, 80, 0, 70, 0.9f, 0    // Invalid rectangle.
+                10, 80, 0, 70, 0.99f, 0   // A stronger invalid rectangle must not win.
             };
             var output = new float[300 * 6];
             Array.Copy(sampleRows, output, sampleRows.Length);
             var results = DetectionFilter.ReadYOLO26(output, landscape, 1, 0.35f, 24);
             Require(results.Count == 2 && results[0].Box == new Vector4(0, 0, 1280, 720), "Confidence/classes/coordinates; no second NMS");
-            Require(DetectionFilter.ReadYOLO26(output, landscape, 1, 0.35f, 1).Count == 1, "Detection limit");
-            Require(DetectionFilter.ReadYOLO26(output, landscape, 1, 1, 24).Count == 0, "No confident results");
+            var single = DetectionFilter.ReadYOLO26(output, landscape, 1, 0.35f, TransmitterRecognitionModel.MaxDetections);
+            Require(single.Count == 1 && single[0].ClassId == 0 && Mathf.Approximately(single[0].Confidence, 0.9f),
+                "Only the strongest valid transmitter is shown");
+            Require(DetectionFilter.ReadYOLO26(output, landscape, 1, 1, TransmitterRecognitionModel.MaxDetections).Count == 0,
+                "No box when no valid transmitter meets the confidence threshold");
             var wrongShape = new float[84 * 2100];
             bool rejected = false;
             try { DetectionFilter.ReadYOLO26(wrongShape, landscape, 1, 0.35f, 24); }

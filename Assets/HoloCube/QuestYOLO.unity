@@ -530,7 +530,7 @@ GameObject:
   - component: {fileID: 156549318}
   - component: {fileID: 156549317}
   m_Layer: 0
-  m_Name: Number of boxes Value Box
+  m_Name: Number of boxes (fixed) Value Box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1486,7 +1486,7 @@ GameObject:
   - component: {fileID: 719534787}
   - component: {fileID: 719534786}
   m_Layer: 0
-  m_Name: Number of boxes Label
+  m_Name: Number of boxes (fixed) Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1544,7 +1544,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Number of boxes
+  m_Text: Number of boxes (fixed)
 --- !u!222 &719534787
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2223,7 +2223,7 @@ GameObject:
   m_Component:
   - component: {fileID: 939908636}
   m_Layer: 0
-  m_Name: Number of boxes Icon
+  m_Name: Number of boxes (fixed) Icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2497,7 +2497,7 @@ GameObject:
   - component: {fileID: 1054053140}
   - component: {fileID: 1054053139}
   m_Layer: 0
-  m_Name: Number of boxes Value
+  m_Name: Number of boxes (fixed) Value
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2555,7 +2555,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 24
+  m_Text: 1
 --- !u!222 &1054053140
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3971,7 +3971,6 @@ MonoBehaviour:
   RecordingFeedbackLabel: {fileID: 206859752}
   RecordingFeedbackIcon: {fileID: 98774775}
   Confidence: 0.35
-  MaxDetections: 24
   DetectionInterval: 0.1
   MaxResultAge: 0.75
 --- !u!4 &1923654632
@@ -4432,7 +4431,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Joystick up/down: select \xB7 left/right: adjust"
+  m_Text: "Joystick left/right: adjust confidence"
 --- !u!222 &1978326985
 CanvasRenderer:
   m_ObjectHideFlags: 0

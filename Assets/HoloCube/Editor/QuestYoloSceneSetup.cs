@@ -116,8 +116,8 @@ namespace HoloCube.Editor
         {
             PlayerSettings.companyName = "HoloCube";
             PlayerSettings.productName = "HoloCube";
-            PlayerSettings.bundleVersion = "0.6";
-            PlayerSettings.Android.bundleVersionCode = 6;
+            PlayerSettings.bundleVersion = "0.7";
+            PlayerSettings.Android.bundleVersionCode = 7;
             PlayerSettings.SetApplicationIdentifier(UnityEditor.Build.NamedBuildTarget.Android, "com.developer27.holocube");
             PlayerSettings.SetScriptingBackend(UnityEditor.Build.NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -301,7 +301,7 @@ namespace HoloCube.Editor
                 out var confidenceBox, out var confidenceValue);
             settings.ConfidenceBox = confidenceBox;
             settings.ConfidenceValue = confidenceValue;
-            CreateSettingsRow(root, "Number of boxes", DialogIcon.Kind.Boxes, -54,
+            CreateSettingsRow(root, "Number of boxes (fixed)", DialogIcon.Kind.Boxes, -54,
                 out var boxCountBox, out var boxCountValue);
             settings.BoxCountBox = boxCountBox;
             settings.BoxCountValue = boxCountValue;
@@ -314,10 +314,10 @@ namespace HoloCube.Editor
             divider.rectTransform.sizeDelta = new Vector2(960, 1);
             divider.color = WithAlpha(DialogTextColor, 0.2f);
             divider.raycastTarget = false;
-            CreateSettingsText(root, "Joystick Help", "Joystick up/down: select · left/right: adjust",
+            CreateSettingsText(root, "Joystick Help", "Joystick left/right: adjust confidence",
                 new Vector2(0, -145), new Vector2(960, 48), 26, TextAnchor.MiddleCenter);
 
-            settings.Refresh(0.35f, 24, 0);
+            settings.Refresh(0.35f);
             rootObject.SetActive(false);
             return settings;
         }

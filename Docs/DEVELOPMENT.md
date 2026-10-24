@@ -66,10 +66,14 @@ the editor-only Linux simulator-installer fix from the initial implementation.
 4. `holocube_runtime.py` flips Unity's bottom-first pixels to top-first RGB,
    normalizes them to 0–1, and runs the transmitter checkpoint.
 5. `DetectionFilter` reads `[x1,y1,x2,y2,confidence,class_id]` rows, removes padding,
-   and maps boxes to original camera pixels. `DetectionOverlay` places AR labels.
+   and maps boxes to original camera pixels. The transmitter pipeline requests
+   only the highest-confidence valid detection (`TransmitterRecognitionModel.MaxDetections = 1`).
+   `DetectionOverlay` places its AR label; no box appears below the confidence threshold.
 
 Input is `[1,3,320,320]` float32; output is `[1,300,6]`. The one-to-one head already
-selects detections. No second non-maximum suppression step is applied.
+selects detections. No second non-maximum suppression step is applied. The final
+single-box cap is fixed in the pipeline; the headset settings can adjust confidence
+but cannot increase the number of boxes.
 
 Pausing discards pending results. Native inference finishes safely in the background
 before another frame is submitted. Camera pose is captured with each image, and
