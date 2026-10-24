@@ -8,7 +8,7 @@ namespace HoloCube.QuestYOLO
     public sealed class TransmitterRecognitionModel : ScriptableObject
     {
         public const string CheckpointFile = "holocube_transmitter.pt";
-        public const string CheckpointHash = "8c6e981c7a49ff52c7113cf9cd95763ae6495e3baab3e3d68c17a6919e3d8fef";
+        public const string CheckpointHash = "3da988ae9e3aa5a66b175adb6275463d21f48828faac5ad77ebd0465570e7cf5";
         public const int InputSize = 320;
 
         [Tooltip("One object name per line, in class-ID order.")]

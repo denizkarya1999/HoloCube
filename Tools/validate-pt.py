@@ -40,7 +40,7 @@ def compare(rows, reference):
         assert np.linalg.norm(difference) < 1, difference
 
 
-for name, reference_name in [('input', 'expected'), ('angled', 'angled'), ('near', 'near')]:
+for name, reference_name in [('input', 'expected'), ('angled', 'angled'), ('low_light', 'low_light')]:
     reference = json.loads((fixture / (reference_name + '.json')).read_text())
     data = np.fromfile(fixture / (name + '.f32'), dtype='<f4').reshape(1, 3, 320, 320)
     with torch.no_grad():

@@ -1,5 +1,47 @@
 # HoloCube validation
 
+## Updated Transmitter Recognition release — October 23, 2026
+
+- HoloCube **0.6 (code 6)**, package `com.developer27.holocube`, installed on Quest 3S.
+- Replaced the checkpoint with the file supplied in Downloads on October 23.
+  Its 10,386,814 bytes are embedded unchanged; its only class is **0: Transmitter**.
+- Model SHA-256:
+  `3da988ae9e3aa5a66b175adb6275463d21f48828faac5ad77ebd0465570e7cf5`.
+- Desktop PyTorch 1.8.1 matches independent Ultralytics 8.4.56 / PyTorch 2.12.0
+  inference on bright, angled, and low-light validation frames within 0.001
+  confidence and 1 original-image pixel. Blank input, signed RGBA orientation,
+  startup-reference mismatch, and modified-checkpoint rejection checks passed.
+- Unity scene wiring, decoder/filter checks, and Android ARM64/IL2CPP build passed.
+  The original saved scene was validated again after discarding regeneration-only
+  object-ID changes. Actual desktop Vulkan preprocessing passed padding,
+  orientation, and sRGB checks; its RGBA output also passed model comparison.
+- The final build guard and independent APK archive inspection confirmed exactly
+  one embedded `.pt`, matching the supplied file byte for byte, and matching
+  startup reference files. Recorder packaging checks also passed.
+- Installed through `hzdb app install --replace`, preserving existing app data.
+  Device package information confirms version 0.6 / code 6. The first cold launch
+  focused the app and passed the crash scan. The headset subsequently suspended
+  the app; a wake-and-relaunch attempt encountered the headset lock screen.
+  On-device model startup parity and live camera inference are not yet confirmed
+  for this release. The successful device inference results below concern 0.5.
+
+APK: `Builds/HoloCube.apk`, 111,053,040 bytes. SHA-256:
+`fda6445ab2f68b7f3b3f2e7f05a7f0086e1830fb7ee7ad67e71331de48f307ce`.
+Local logs: `Builds/Build.log`, `Builds/Validate.log`, `Builds/ValidateGPU.log`,
+`Builds/Validate-300frames-python.log`, `Builds/Validate-300frames-gpu-model.log`,
+`Builds/Quest-300frames-app.json`, and `Builds/Quest-300frames-launch.json`.
+Build artifacts and device logs are excluded from Git.
+
+The fixtures come from the validation split of the prepared 300-frame dataset
+(210 training / 60 validation / 30 testing images). The supplied model-only
+checkpoint contains no training history or accuracy metrics, so this dataset is
+recorded as intended context rather than verified training provenance. These are
+runtime compatibility checks, not an accuracy benchmark. An additional clipped
+close-up validation frame produced no detection above the app's 35% threshold.
+Longer headset testing and visual confirmation of the updated detector remain.
+
+---
+
 ## Transmitter Recognition release — October 19, 2026
 
 - HoloCube **0.5 (code 5)**, package `com.developer27.holocube`, deployed to Quest 3S.

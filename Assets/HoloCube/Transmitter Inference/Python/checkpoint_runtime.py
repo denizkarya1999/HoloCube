@@ -11,7 +11,7 @@ import warnings
 import torch
 from torch import nn
 
-CHECKPOINT_SHA256 = '8c6e981c7a49ff52c7113cf9cd95763ae6495e3baab3e3d68c17a6919e3d8fef'
+CHECKPOINT_SHA256 = '3da988ae9e3aa5a66b175adb6275463d21f48828faac5ad77ebd0465570e7cf5'
 
 
 class Conv(nn.Module):

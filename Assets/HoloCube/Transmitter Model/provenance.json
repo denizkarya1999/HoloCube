@@ -1,7 +1,7 @@
 {
   "model": "HoloCube Transmitter Recognition Model",
   "format": "Supplied trained PyTorch checkpoint, legacy serialization, unchanged",
-  "checkpoint_sha256": "8c6e981c7a49ff52c7113cf9cd95763ae6495e3baab3e3d68c17a6919e3d8fef",
+  "checkpoint_sha256": "3da988ae9e3aa5a66b175adb6275463d21f48828faac5ad77ebd0465570e7cf5",
   "export": "Training notebook produced an app-compatible native .pt; no additional conversion for deployment",
   "runtime": {
     "python": "3.8",
@@ -33,10 +33,21 @@
   "license": "AGPL-3.0",
   "architecture": "YOLO26n, end-to-end, single class",
   "checkpoint_file": "holocube_transmitter.pt",
-  "source": "User-supplied Desktop/holocube_transmitter.pt on 2026-10-19",
+  "source": "User-supplied Downloads/holocube_transmitter.pt on 2026-10-23",
   "class_names": {
     "0": "Transmitter"
   },
   "training_metrics": null,
-  "validation": "Three local transmitter frames compared against independent Ultralytics inference; not a held-out accuracy benchmark"
+  "validation": "Three validation-split transmitter frames (bright, angled, low light) compared against independent Ultralytics inference; not an accuracy benchmark",
+  "checkpoint_bytes": 10386814,
+  "intended_dataset": {
+    "archive": "HoloCube_Transmitter_YOLO26_300frames_20261023.zip",
+    "sha256": "2c0bbe30ff0ce3a5af869dbc1591d12a6f23aa8fad8d073fa3daf42a800cfcc6",
+    "counts": {
+      "train": 210,
+      "val": 60,
+      "test": 30
+    },
+    "note": "Prepared in this project; the supplied model-only checkpoint does not contain training-run metadata or metrics."
+  }
 }

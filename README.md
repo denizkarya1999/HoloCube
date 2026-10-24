@@ -13,6 +13,8 @@ The camera, trained model, and detection code run on the Quest, offline. The APK
 embeds Python, PyTorch, and the supplied **`holocube_transmitter.pt`** checkpoint.
 The active model has one class, `0: Transmitter`; the general 80-class COCO model
 has been removed from the app. The trained detector uses the YOLO26n architecture.
+Version 0.6 bundles the replacement checkpoint supplied on October 23, 2026;
+its checksum and dataset context are recorded in the model's `provenance.json`.
 A computer is only needed to build or install the app.
 
 ## Android phone transmitter
